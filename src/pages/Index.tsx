@@ -11,7 +11,10 @@ import { cn } from '@/lib/utils';
 
 type AppStep = 'landing' | 'select-body' | 'chatbot' | 'exercises' | 'player' | 'motion';
 
+import { useNavigate } from 'react-router-dom';
+
 const Index = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<AppStep>('landing');
   const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([]);
   const [selectedBodyPart, setSelectedBodyPart] = useState<string | null>(null);
@@ -33,8 +36,7 @@ const Index = () => {
   };
 
   const handleStartExercise = (exercise: Exercise) => {
-    setCurrentExercise(exercise);
-    setCurrentStep('player');
+    navigate(`/exercise/${exercise.id}`);
   };
 
   const handleStartMotionDetection = () => {
@@ -52,11 +54,11 @@ const Index = () => {
             </div>
             <span className="font-display font-bold text-xl text-foreground">PhysioAI</span>
           </div>
-          
+
           {currentStep !== 'landing' && (
             <div className="flex items-center gap-2">
-              <Button 
-                variant={currentStep === 'select-body' ? 'default' : 'ghost'} 
+              <Button
+                variant={currentStep === 'select-body' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setCurrentStep('select-body')}
               >
@@ -64,7 +66,7 @@ const Index = () => {
                 Select Area
               </Button>
               {selectedBodyPart && (
-                <Button 
+                <Button
                   variant={currentStep === 'chatbot' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setCurrentStep('chatbot')}
@@ -74,7 +76,7 @@ const Index = () => {
                 </Button>
               )}
               {assessment && (
-                <Button 
+                <Button
                   variant={currentStep === 'exercises' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setCurrentStep('exercises')}
@@ -101,22 +103,22 @@ const Index = () => {
                     <Sparkles className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium text-primary">AI-Powered Physical Therapy</span>
                   </div>
-                  
+
                   <h1 className="font-display text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                     Your Personal
                     <span className="block bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                       Therapy Assistant
                     </span>
                   </h1>
-                  
+
                   <p className="text-lg text-muted-foreground max-w-lg">
-                    Get personalized exercise recommendations based on your symptoms. 
+                    Get personalized exercise recommendations based on your symptoms.
                     Our AI tracks your form in real-time to ensure you're doing exercises correctly.
                   </p>
 
                   <div className="flex flex-wrap gap-4">
-                    <Button 
-                      variant="hero" 
+                    <Button
+                      variant="hero"
                       size="xl"
                       onClick={() => setCurrentStep('select-body')}
                     >
@@ -188,7 +190,7 @@ const Index = () => {
                       description: 'Watch exercise demos and get real-time form correction using your camera.'
                     }
                   ].map((feature, index) => (
-                    <div 
+                    <div
                       key={index}
                       className="gradient-card rounded-2xl p-6 shadow-card border border-border hover:shadow-glow transition-all duration-300 animate-slide-up"
                       style={{ animationDelay: `${index * 0.1}s` }}
@@ -222,7 +224,7 @@ const Index = () => {
               </p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <BodyMap 
+              <BodyMap
                 onBodyPartSelect={handleBodyPartSelect}
                 selectedParts={selectedBodyParts}
               />
@@ -242,16 +244,16 @@ const Index = () => {
               </p>
             </div>
             <div className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
-              <ChatBot 
+              <ChatBot
                 selectedBodyPart={selectedBodyPart}
                 onAssessmentComplete={handleAssessmentComplete}
               />
             </div>
-            
+
             {assessment && (
               <div className="mt-6 text-center animate-slide-up">
-                <Button 
-                  variant="hero" 
+                <Button
+                  variant="hero"
                   size="lg"
                   onClick={() => setCurrentStep('exercises')}
                 >
@@ -310,7 +312,7 @@ const Index = () => {
                   className="animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <ExerciseCard 
+                  <ExerciseCard
                     exercise={exercise}
                     onStartExercise={handleStartExercise}
                   />
