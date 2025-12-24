@@ -37,6 +37,17 @@ export interface Achievement {
     message: string;
 }
 
+// Pain tracking for progress monitoring
+export interface PainRecord {
+    id: string;
+    date: string;
+    sessionId: string | null;
+    painLevel: number; // 1-10
+    bodyPart: string;
+    timing: 'before' | 'after';
+    notes?: string;
+}
+
 // Badge definitions
 export const BADGES: Badge[] = [
     { id: 'first-steps', name: 'First Steps', description: 'Complete your first exercise', icon: '🎯', requirement: '1 session', unlockedAt: null },
@@ -56,6 +67,7 @@ const STORAGE_KEYS = {
     stats: 'physio_stats',
     badges: 'physio_badges',
     achievements: 'physio_achievements',
+    painRecords: 'physio_pain_records',
 };
 
 // Initialize default stats
@@ -253,6 +265,135 @@ export const formatTime = (seconds: number): string => {
         return `${mins}m ${secs}s`;
     }
     return `${secs}s`;
+};
+
+// ============ Pain Tracking Functions ============
+
+// Get all pain records
+export const getPainRecords = (): PainRecord[] => {
+    try {
+        const data = localStorage.getItem(STORAGE_KEYS.painRecords);
+        return data ? JSON.parse(data) : [];
+    } catch {
+        return [];
+    }
+};
+
+// Save a new pain record
+export const savePainRecord = (record: Omit<PainRecord, 'id' | 'date'>): PainRecord => {
+    const records = getPainRecords();
+
+    const newRecord: PainRecord = {
+        ...record,
+        id: `pain_${Date.now()}`,
+        date: new Date().toISOString(),
+    };
+
+    records.push(newRecord);
+    localStorage.setItem(STORAGE_KEYS.painRecords, JSON.stringify(records));
+
+    return newRecord;
+};
+
+// Get pain progression data for charts (last 7 days)
+export const getPainProgressionData = (bodyPart?: string): {
+    date: string;
+    before: number | null;
+    after: number | null;
+    improvement: number;
+}[] => {
+    const records = getPainRecords();
+    const today = new Date();
+    const progressData: { date: string; before: number | null; after: number | null; improvement: number }[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+        const dayRecords = records.filter(r => {
+            const recordDate = r.date.split('T')[0];
+            const matchesDate = recordDate === dateStr;
+            const matchesBodyPart = !bodyPart || r.bodyPart.toLowerCase() === bodyPart.toLowerCase();
+            return matchesDate && matchesBodyPart;
+        });
+
+        const beforeRecords = dayRecords.filter(r => r.timing === 'before');
+        const afterRecords = dayRecords.filter(r => r.timing === 'after');
+
+        const avgBefore = beforeRecords.length > 0
+            ? beforeRecords.reduce((sum, r) => sum + r.painLevel, 0) / beforeRecords.length
+            : null;
+        const avgAfter = afterRecords.length > 0
+            ? afterRecords.reduce((sum, r) => sum + r.painLevel, 0) / afterRecords.length
+            : null;
+
+        const improvement = (avgBefore !== null && avgAfter !== null)
+            ? Math.round(((avgBefore - avgAfter) / avgBefore) * 100)
+            : 0;
+
+        progressData.push({
+            date: dayName,
+            before: avgBefore !== null ? Math.round(avgBefore * 10) / 10 : null,
+            after: avgAfter !== null ? Math.round(avgAfter * 10) / 10 : null,
+            improvement,
+        });
+    }
+
+    return progressData;
+};
+
+// Get average pain level by body part
+export const getAveragePainByBodyPart = (): { bodyPart: string; avgPain: number; recordCount: number }[] => {
+    const records = getPainRecords();
+    const bodyPartMap: Record<string, { total: number; count: number }> = {};
+
+    records.forEach(record => {
+        const part = record.bodyPart.toLowerCase();
+        if (!bodyPartMap[part]) {
+            bodyPartMap[part] = { total: 0, count: 0 };
+        }
+        bodyPartMap[part].total += record.painLevel;
+        bodyPartMap[part].count += 1;
+    });
+
+    return Object.entries(bodyPartMap).map(([bodyPart, data]) => ({
+        bodyPart: bodyPart.charAt(0).toUpperCase() + bodyPart.slice(1),
+        avgPain: Math.round((data.total / data.count) * 10) / 10,
+        recordCount: data.count,
+    }));
+};
+
+// Get pain improvement percentage (comparing first week to latest)
+export const getPainImprovementStats = (): {
+    overallImprovement: number;
+    averageBeforePain: number;
+    averageAfterPain: number;
+    totalRecords: number;
+} => {
+    const records = getPainRecords();
+
+    const beforeRecords = records.filter(r => r.timing === 'before');
+    const afterRecords = records.filter(r => r.timing === 'after');
+
+    const avgBefore = beforeRecords.length > 0
+        ? beforeRecords.reduce((sum, r) => sum + r.painLevel, 0) / beforeRecords.length
+        : 0;
+    const avgAfter = afterRecords.length > 0
+        ? afterRecords.reduce((sum, r) => sum + r.painLevel, 0) / afterRecords.length
+        : 0;
+
+    const improvement = avgBefore > 0
+        ? Math.round(((avgBefore - avgAfter) / avgBefore) * 100)
+        : 0;
+
+    return {
+        overallImprovement: improvement,
+        averageBeforePain: Math.round(avgBefore * 10) / 10,
+        averageAfterPain: Math.round(avgAfter * 10) / 10,
+        totalRecords: records.length,
+    };
 };
 
 // Clear all data (for testing)

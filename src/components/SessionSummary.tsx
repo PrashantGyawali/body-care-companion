@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { formatTime, Achievement, Badge, getBadges } from '@/utils/progressStore';
+import { formatTime, Achievement, Badge, getBadges, getStats } from '@/utils/progressStore';
+import { ShareModal } from '@/components/ShareModal';
 import {
     Trophy,
     Clock,
@@ -11,7 +12,8 @@ import {
     Home,
     TrendingUp,
     Sparkles,
-    Star
+    Star,
+    Share2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -24,6 +26,7 @@ interface SessionSummaryProps {
         duration: number;
         formScore: number;
         targetArea: string;
+        exerciseType?: 'REPS' | 'DURATION'; // Added to distinguish display
     };
     newAchievements: Achievement[];
 }
@@ -37,6 +40,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
     const navigate = useNavigate();
     const hasPlayedConfetti = useRef(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [showShareModal, setShowShareModal] = useState(false);
 
     useEffect(() => {
         if (isOpen && !hasPlayedConfetti.current) {
@@ -165,7 +169,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                         <div className="text-center p-4 bg-secondary rounded-xl">
                             <Dumbbell className="w-6 h-6 text-primary mx-auto mb-2" />
                             <p className="text-2xl font-bold text-foreground">{sessionData.reps}</p>
-                            <p className="text-xs text-muted-foreground">Reps</p>
+                            <p className="text-xs text-muted-foreground">
+                                {sessionData.exerciseType === 'DURATION' ? 'Hold Time (s)' : 'Reps'}
+                            </p>
                         </div>
                         <div className="text-center p-4 bg-secondary rounded-xl">
                             <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
@@ -223,17 +229,33 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                             Home
                         </Button>
                         <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setShowShareModal(true)}
+                        >
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Share
+                        </Button>
+                        <Button
                             variant="hero"
                             className="flex-1"
                             onClick={() => navigate('/dashboard')}
                         >
                             <TrendingUp className="w-4 h-4 mr-2" />
-                            View Progress
+                            Progress
                             <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                     </div>
                 </div>
             </div>
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                stats={getStats()}
+                badges={getBadges()}
+            />
         </div>
     );
 };

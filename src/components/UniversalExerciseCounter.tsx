@@ -5,8 +5,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle, CheckCircle2, Square, StopCircle } from 'lucide-react';
 import { getExerciseConfig, ExerciseType } from '../utils/exercise-configs';
 import { getExercisesForBodyPart, exerciseDatabase } from '../data/exercises';
-import { saveSession, Achievement } from '../utils/progressStore';
+import { saveSession, savePainRecord, Achievement } from '../utils/progressStore';
 import SessionSummary from './SessionSummary';
+import PainRatingModal from './PainRatingModal';
+import { initVoiceCoach, resetVoiceCoach, announceStart, onRepComplete, onHoldProgress, announceCompletion } from '../utils/voiceCoach';
 
 // Find exercise details by ID
 const findExerciseById = (id: string) => {
@@ -46,6 +48,57 @@ const UniversalExerciseCounter: React.FC = () => {
         targetArea: string;
     } | null>(null);
 
+    // Pain tracking state
+    const [exercisePhase, setExercisePhase] = useState<'pain-before' | 'exercising' | 'pain-after' | 'complete'>('pain-before');
+    const [painBefore, setPainBefore] = useState<number>(0);
+    const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+    // Real-time form tracking
+    const [liveFormScore, setLiveFormScore] = useState(100);
+    const formScoreRef = useRef<number[]>([]);
+
+    // Form quality tracking for dynamic scoring
+    const lastMetricValueRef = useRef<number>(0);
+    const metricHistoryRef = useRef<number[]>([]);
+
+    // Voice coach tracking
+    const lastRepAnnouncedRef = useRef(0);
+    const lastHoldSecondRef = useRef(0);
+    const hasAnnouncedStartRef = useRef(false);
+
+    // Handle pain rating before starting
+    const handlePainBeforeComplete = (painLevel: number) => {
+        setPainBefore(painLevel);
+        if (painLevel > 0) {
+            savePainRecord({
+                sessionId: null,
+                painLevel,
+                bodyPart: exerciseDetails?.targetArea || 'general',
+                timing: 'before',
+            });
+        }
+        setExercisePhase('exercising');
+        // Announce start after pain rating
+        if (!hasAnnouncedStartRef.current) {
+            hasAnnouncedStartRef.current = true;
+            announceStart();
+        }
+    };
+
+    // Handle pain rating after exercise
+    const handlePainAfterComplete = (painLevel: number) => {
+        if (painLevel > 0 && currentSessionId) {
+            savePainRecord({
+                sessionId: currentSessionId,
+                painLevel,
+                bodyPart: exerciseDetails?.targetArea || 'general',
+                timing: 'after',
+            });
+        }
+        setExercisePhase('complete');
+        setShowSummary(true);
+    };
+
     // Handle ending the exercise
     const handleEndExercise = () => {
         // Stop the animation frame
@@ -60,25 +113,30 @@ const UniversalExerciseCounter: React.FC = () => {
             stream.getTracks().forEach(track => track.stop());
         }
 
+        // Announce completion
+        announceCompletion();
+
         // Calculate session data
         const duration = Math.round((Date.now() - sessionStartTime) / 1000);
         const reps = statsRef.current.count;
         const timer = statsRef.current.timer;
 
-        // Calculate form score (based on successful tracking vs total time)
-        // For now, we'll use a simple formula based on activity
-        const formScore = Math.min(100, Math.round(
-            config.type === 'REPS'
-                ? Math.min(100, reps * 20 + 40)  // More reps = better score
-                : Math.min(100, (timer / Math.max(1, duration)) * 100 + 20) // More hold time ratio = better
-        ));
+        // Calculate form score from tracked scores
+        const formScore = formScoreRef.current.length > 0
+            ? Math.round(formScoreRef.current.reduce((a, b) => a + b, 0) / formScoreRef.current.length)
+            : Math.min(100, Math.round(
+                config.type === 'REPS'
+                    ? Math.min(100, reps * 20 + 40)
+                    : Math.min(100, (timer / Math.max(1, duration)) * 100 + 20)
+            ));
 
         const data = {
             exerciseName: exerciseDetails?.name || 'Unknown Exercise',
-            reps: config.type === 'REPS' ? reps : timer, // Use timer as "reps" for duration exercises
+            reps: config.type === 'REPS' ? reps : timer,
             duration,
             formScore,
             targetArea: exerciseDetails?.targetArea || 'general',
+            exerciseType: config.type, // Add exercise type for display
         };
 
         setSessionData(data);
@@ -93,8 +151,11 @@ const UniversalExerciseCounter: React.FC = () => {
             targetArea: data.targetArea,
         });
 
+        setCurrentSessionId(`session_${Date.now()}`);
         setNewAchievements(achievements);
-        setShowSummary(true);
+
+        // Show pain-after rating before summary
+        setExercisePhase('pain-after');
     };
 
     // Refs for Loop
@@ -158,6 +219,13 @@ const UniversalExerciseCounter: React.FC = () => {
         if (window.speechSynthesis) {
             window.speechSynthesis.onvoiceschanged = loadVoices;
         }
+
+        // Initialize voice coach
+        initVoiceCoach();
+
+        return () => {
+            resetVoiceCoach();
+        };
     }, []);
 
     useEffect(() => {
@@ -274,15 +342,25 @@ const UniversalExerciseCounter: React.FC = () => {
                     currentFeedback = "Adjust position. Body parts not visible.";
                 }
 
-                // 2. Draw Skeleton
+                // 2. Draw Skeleton with Dynamic Colors based on Form Quality
+                // Determine skeleton color based on live form score
+                const getFormColor = (score: number): string => {
+                    if (score >= 80) return '#22c55e'; // Green - Excellent form
+                    if (score >= 50) return '#eab308'; // Yellow - Needs adjustment
+                    return '#ef4444'; // Red - Poor form
+                };
+
+                const skeletonColor = getFormColor(liveFormScore);
+                const jointColor = liveFormScore >= 80 ? '#10b981' : liveFormScore >= 50 ? '#f59e0b' : '#dc2626';
+
                 for (const conn of config.connections) {
                     // Get actual landmarks
                     const startLm = getLandmark(landmark, conn.start, currentSide);
                     const endLm = getLandmark(landmark, conn.end, currentSide);
 
                     if (startLm && endLm && isVisible(startLm) && isVisible(endLm)) {
-                        drawingUtils.drawConnectors([startLm, endLm], [{ start: 0, end: 1 }], { color: '#ffffff', lineWidth: 4 });
-                        drawingUtils.drawLandmarks([startLm, endLm], { color: '#FF0000', lineWidth: 2, radius: 4 });
+                        drawingUtils.drawConnectors([startLm, endLm], [{ start: 0, end: 1 }], { color: skeletonColor, lineWidth: 4 });
+                        drawingUtils.drawLandmarks([startLm, endLm], { color: jointColor, lineWidth: 2, radius: 4 });
                     }
                 }
 
@@ -310,6 +388,54 @@ const UniversalExerciseCounter: React.FC = () => {
 
                     const val = config.calculateMetric(virtualLandmarks);
 
+                    // Calculate dynamic form quality
+                    let formQuality = 100;
+
+                    // Factor 1: Visibility (40 points)
+                    const visibilityScore = allVisible ? 40 : 20;
+
+                    // Factor 2: Position accuracy (30 points)
+                    let positionScore = 30;
+                    if (config.type === 'REPS') {
+                        // Check if in the middle of proper range
+                        const { start, end } = config.thresholds;
+                        if (start !== undefined && end !== undefined) {
+                            const range = Math.abs(end - start);
+                            const mid = (start + end) / 2;
+                            const deviation = Math.abs(val - mid) / range;
+                            positionScore = Math.max(10, 30 - deviation * 20);
+                        }
+                    } else {
+                        // DURATION: check if within target range
+                        const { min, max } = config.thresholds;
+                        if (min !== undefined && max !== undefined) {
+                            if (val >= min && val <= max) {
+                                positionScore = 30;
+                            } else {
+                                const distance = val < min ? (min - val) : (val - max);
+                                positionScore = Math.max(10, 30 - distance);
+                            }
+                        }
+                    }
+
+                    // Factor 3: Movement smoothness (30 points)
+                    let smoothnessScore = 30;
+                    metricHistoryRef.current.push(val);
+                    if (metricHistoryRef.current.length > 10) {
+                        metricHistoryRef.current.shift();
+                    }
+                    if (metricHistoryRef.current.length >= 3) {
+                        // Calculate variance - lower variance = smoother = better
+                        const recent = metricHistoryRef.current.slice(-5);
+                        const mean = recent.reduce((a, b) => a + b, 0) / recent.length;
+                        const variance = recent.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / recent.length;
+                        const normalizedVariance = Math.min(variance / 100, 1); // Normalize to 0-1
+                        smoothnessScore = Math.max(15, 30 - normalizedVariance * 15);
+                    }
+
+                    formQuality = Math.round(Math.max(60, Math.min(100, visibilityScore + positionScore + smoothnessScore)));
+                    setLiveFormScore(formQuality);
+
                     // Display Metric
                     canvasCtx.font = "30px Arial";
                     canvasCtx.fillStyle = "white";
@@ -335,6 +461,15 @@ const UniversalExerciseCounter: React.FC = () => {
                                     statsRef.current.count += 1;
                                     lastTimeRef.current = now;
                                     stageRef.current = 'START';
+
+                                    // Voice coach - announce rep completion
+                                    if (statsRef.current.count !== lastRepAnnouncedRef.current) {
+                                        lastRepAnnouncedRef.current = statsRef.current.count;
+                                        onRepComplete(statsRef.current.count);
+                                    }
+
+                                    // Track form score at rep completion
+                                    formScoreRef.current.push(formQuality);
                                 }
                             }
                         }
@@ -352,6 +487,19 @@ const UniversalExerciseCounter: React.FC = () => {
                                     if (delta >= 1) { // Apply every second
                                         statsRef.current.timer += 1;
                                         lastTimeRef.current = now;
+
+                                        // Update state to trigger re-render for live timer display
+                                        setStats({ ...statsRef.current });
+
+                                        // Voice coach - announce hold progress (every 5 seconds)
+                                        const timer = statsRef.current.timer;
+                                        if (timer % 5 === 0 && timer !== lastHoldSecondRef.current) {
+                                            lastHoldSecondRef.current = timer;
+                                            onHoldProgress(timer);
+                                        }
+
+                                        // Track good form score during hold
+                                        formScoreRef.current.push(formQuality);
                                     }
                                 }
 
@@ -489,6 +637,30 @@ const UniversalExerciseCounter: React.FC = () => {
                         <div className="text-5xl font-mono font-bold text-emerald-400 tabular-nums leading-none">
                             {config.type === 'REPS' ? stats.count : `${stats.timer}s`}
                         </div>
+                        {/* Live Form Quality Score */}
+                        {exercisePhase === 'exercising' && (
+                            <div className="mt-3 pt-3 border-t border-white/20">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs text-gray-400 font-medium">Form Quality</span>
+                                    <span className={`text-lg font-bold ${liveFormScore >= 80 ? 'text-green-400' :
+                                        liveFormScore >= 50 ? 'text-yellow-400' :
+                                            'text-red-400'
+                                        }`}>
+                                        {liveFormScore}%
+                                    </span>
+                                </div>
+                                {/* Progress bar */}
+                                <div className="w-full h-1.5 bg-white/10 rounded-full mt-2 overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-300 ${liveFormScore >= 80 ? 'bg-green-400' :
+                                            liveFormScore >= 50 ? 'bg-yellow-400' :
+                                                'bg-red-400'
+                                            }`}
+                                        style={{ width: `${liveFormScore}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {!loaded && (
@@ -555,10 +727,32 @@ const UniversalExerciseCounter: React.FC = () => {
                 </div>
             </div>
 
+            {/* Pain Rating Modal - Before Exercise */}
+            <PainRatingModal
+                isOpen={exercisePhase === 'pain-before'}
+                onClose={() => setExercisePhase('exercising')}
+                onComplete={handlePainBeforeComplete}
+                timing="before"
+                bodyPart={exerciseDetails?.targetArea || 'general'}
+            />
+
+            {/* Pain Rating Modal - After Exercise */}
+            <PainRatingModal
+                isOpen={exercisePhase === 'pain-after'}
+                onClose={() => {
+                    setExercisePhase('complete');
+                    setShowSummary(true);
+                }}
+                onComplete={handlePainAfterComplete}
+                timing="after"
+                bodyPart={exerciseDetails?.targetArea || 'general'}
+                sessionId={currentSessionId || undefined}
+            />
+
             {/* Session Summary Modal */}
             {sessionData && (
                 <SessionSummary
-                    isOpen={showSummary}
+                    isOpen={showSummary && exercisePhase === 'complete'}
                     onClose={() => {
                         setShowSummary(false);
                         navigate('/');

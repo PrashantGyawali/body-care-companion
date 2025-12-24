@@ -4,11 +4,15 @@ import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { BadgeGallery } from '@/components/dashboard/BadgeGallery';
 import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
+import { PainProgressionChart } from '@/components/dashboard/PainProgressionChart';
+import { ShareModal } from '@/components/ShareModal';
+import { generateHealthReport } from '@/utils/reportGenerator';
 import {
     getStats,
     getBadges,
     getWeeklyActivity,
     getRecentSessions,
+    getPainProgressionData,
     formatTime,
     ExerciseSession,
     UserStats,
@@ -24,6 +28,9 @@ import {
     Trophy,
     Calendar,
     TrendingUp,
+    Share2,
+    FileText,
+    Download,
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -32,6 +39,9 @@ const Dashboard: React.FC = () => {
     const [badges, setBadges] = useState<Badge[]>([]);
     const [weeklyData, setWeeklyData] = useState<{ day: string; sessions: number; reps: number }[]>([]);
     const [recentSessions, setRecentSessions] = useState<ExerciseSession[]>([]);
+    const [painData, setPainData] = useState<{ date: string; before: number | null; after: number | null; improvement: number }[]>([]);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
     useEffect(() => {
         // Load all data
@@ -39,7 +49,19 @@ const Dashboard: React.FC = () => {
         setBadges(getBadges());
         setWeeklyData(getWeeklyActivity());
         setRecentSessions(getRecentSessions(5));
+        setPainData(getPainProgressionData());
     }, []);
+
+    const handleGenerateReport = async () => {
+        setIsGeneratingReport(true);
+        try {
+            await generateHealthReport();
+        } catch (error) {
+            console.error('Failed to generate report:', error);
+        } finally {
+            setIsGeneratingReport(false);
+        }
+    };
 
     if (!stats) {
         return (
@@ -70,7 +92,27 @@ const Dashboard: React.FC = () => {
                         </div>
                         <span className="font-display font-bold text-xl text-foreground">Progress</span>
                     </div>
-                    <div className="w-24" />
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowShareModal(true)}
+                            className="hidden sm:flex"
+                        >
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Share
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGenerateReport}
+                            disabled={isGeneratingReport}
+                            className="hidden sm:flex"
+                        >
+                            <FileText className="w-4 h-4 mr-2" />
+                            {isGeneratingReport ? 'Generating...' : 'Export PDF'}
+                        </Button>
+                    </div>
                 </div>
             </nav>
 
@@ -127,6 +169,11 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Pain Progression */}
+                <div className="mb-8 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+                    <PainProgressionChart data={painData} />
+                </div>
+
                 {/* Recent Activity */}
                 <div className="bg-card rounded-2xl p-6 shadow-card border border-border animate-slide-up" style={{ animationDelay: '0.3s' }}>
                     <div className="flex items-center justify-between mb-6">
@@ -181,7 +228,7 @@ const Dashboard: React.FC = () => {
                                         </div>
                                         <div className="text-center">
                                             <p className={`font-semibold ${session.formScore >= 80 ? 'text-green-500' :
-                                                    session.formScore >= 50 ? 'text-yellow-500' : 'text-red-500'
+                                                session.formScore >= 50 ? 'text-yellow-500' : 'text-red-500'
                                                 }`}>
                                                 {session.formScore}%
                                             </p>
@@ -208,6 +255,14 @@ const Dashboard: React.FC = () => {
                     </div>
                 )}
             </main>
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                stats={stats}
+                badges={badges}
+            />
         </div>
     );
 };
