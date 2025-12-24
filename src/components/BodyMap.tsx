@@ -107,7 +107,7 @@ export function BodyMap({ onBodyPartSelect }) {
                     />
                 ))}
             </map>
-            <button onClick={()=>onBodyPartSelect(parts)}>done</button>
+            <button onClick={() => onBodyPartSelect(parts)}>done</button>
         </div>
     );
 }

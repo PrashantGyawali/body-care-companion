@@ -40,7 +40,7 @@ export const MotionDetector: React.FC<MotionDetectorProps> = ({ exercise, onClos
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsCameraActive(true);
-        
+
         // Simulate AI feedback
         startSimulatedFeedback();
       }
@@ -158,7 +158,7 @@ export const MotionDetector: React.FC<MotionDetectorProps> = ({ exercise, onClos
                 ref={canvasRef}
                 className="absolute inset-0 w-full h-full pointer-events-none"
               />
-              
+
               {!isCameraActive && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">

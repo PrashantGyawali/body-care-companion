@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BodyMap } from '@/components/BodyMap';
 import { ChatBot, AssessmentData } from '@/components/ChatBot';
@@ -7,6 +7,7 @@ import { ExercisePlayer } from '@/components/ExercisePlayer';
 import { MotionDetector } from '@/components/MotionDetector';
 import { getExercisesForBodyPart } from '@/data/exercises';
 import { Activity, MessageCircle, Dumbbell, Calendar, ArrowRight, Sparkles, Heart, Shield } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type AppStep = 'landing' | 'select-body' | 'chatbot' | 'exercises' | 'player' | 'motion';
 
@@ -16,18 +17,23 @@ const Index = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<AppStep>('landing');
   const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([]);
+  const [selectedBodyPart, setSelectedBodyPart] = useState<string | null>(null);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
   const [recommendedExercises, setRecommendedExercises] = useState<Exercise[]>([]);
   const [currentExercise, setCurrentExercise] = useState<Exercise | null>(null);
 
-  const handleBodyPartSelect = (parts: { id: string; title: string }[]) => {
-    setSelectedBodyParts(parts.map(part => part.title));
+  const handleBodyPartSelect = (parts: Array<{ id: string; title: string }>) => {
+    // Extract titles from the selected parts array - titles match the exercise database keys
+    const partTitles = parts.map(p => p.title);
+    setSelectedBodyParts(partTitles);
+    // Use the first selected part's title for exercise lookup
+    setSelectedBodyPart(partTitles[0] || null);
     setCurrentStep('chatbot');
   };
 
   const handleAssessmentComplete = (data: AssessmentData) => {
     setAssessment(data);
-    const exercises = selectedBodyParts.flatMap(bodypart => getExercisesForBodyPart(bodypart));
+    const exercises = getExercisesForBodyPart(selectedBodyPart || '');
     setRecommendedExercises(exercises);
     setTimeout(() => setCurrentStep('exercises'), 1500);
   };
@@ -62,7 +68,7 @@ const Index = () => {
                 <Dumbbell className="w-4 h-4 mr-2" />
                 Select Area
               </Button>
-              {selectedBodyParts.length > 0 && (
+              {selectedBodyPart && (
                 <Button
                   variant={currentStep === 'chatbot' ? 'default' : 'ghost'}
                   size="sm"
@@ -122,13 +128,8 @@ const Index = () => {
                       Start Assessment
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="xl"
-                      onClick={() => navigate('/all-exercises')}
-                    >
-                      <Dumbbell className="w-5 h-5 mr-2" />
-                      View All Exercises
+                    <Button variant="glass" size="xl">
+                      Watch Demo
                     </Button>
                   </div>
 
@@ -234,7 +235,7 @@ const Index = () => {
         )}
 
         {/* Chatbot Assessment */}
-        {currentStep === 'chatbot' && selectedBodyParts.length > 0 && (
+        {currentStep === 'chatbot' && selectedBodyPart && (
           <div className="container mx-auto px-4 py-12 max-w-2xl">
             <div className="text-center mb-8 animate-slide-up">
               <h1 className="font-display text-3xl font-bold text-foreground mb-2">
