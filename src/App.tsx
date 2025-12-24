@@ -16,6 +16,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <script src="jquery.min.js"></script>
+      <script src="imagemapster.js"></script>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />

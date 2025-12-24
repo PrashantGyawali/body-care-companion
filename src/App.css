@@ -40,3 +40,26 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Add this to your CSS file */
+.body-map-container {
+    width: 100%;
+    max-width: 800px; /* Or whatever your original image width is */
+    margin: 0 auto;
+}
+
+img[usemap] {
+    display: block;
+    width: 100%; /* Important: let the container dictate the width */
+    height: auto;
+}
+
+.body-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    margin: 4px;
+    border-radius: 16px;
+    font-size: 14px;
+}

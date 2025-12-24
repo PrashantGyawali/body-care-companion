@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { bodyParts } from '@/utils/body-parts';
 
 interface Message {
   id: string;
@@ -12,7 +13,7 @@ interface Message {
 }
 
 interface ChatBotProps {
-  selectedBodyPart: string | null;
+  selectedBodyParts: string[] | null;
   onAssessmentComplete: (assessment: AssessmentData) => void;
 }
 
@@ -58,7 +59,7 @@ const questions = [
   }
 ];
 
-export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessmentComplete }) => {
+export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyParts, onAssessmentComplete }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [assessment, setAssessment] = useState<Partial<AssessmentData>>({});
@@ -75,22 +76,31 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
   }, [messages]);
 
   useEffect(() => {
-    if (selectedBodyPart) {
-      const partName = selectedBodyPart.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    if (selectedBodyParts.length > 0) {
+      const partName = selectedBodyParts
+        .map(part =>
+          bodyParts.filter(bodypart=>bodypart.id==part)[0].title
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+        )
+        .reduce((acc, curr, idx, arr) => {
+          if (idx === 0) return curr;
+          if (idx === arr.length - 1) return acc + " and " + curr;
+          return acc + ", " + curr;
+        }, "");
       setAssessment({ bodyPart: partName });
-      
-      // Initial greeting
+
       setIsTyping(true);
       setTimeout(() => {
         setMessages([
           {
             id: '1',
             type: 'bot',
-            content: `I see you're experiencing discomfort in your ${partName}. Let me ask you a few questions to better understand your condition and recommend the right exercises.`
+            content: `I see you're experiencing discomfort around your ${partName}. Let me ask you a few questions to better understand your condition and recommend the right exercises.`
           }
         ]);
         setIsTyping(false);
-        
+
         // First question
         setTimeout(() => {
           setIsTyping(true);
@@ -106,11 +116,11 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
         }, 500);
       }, 1000);
     }
-  }, [selectedBodyPart]);
+  }, [selectedBodyParts]);
 
   const handleOptionSelect = (option: string) => {
     const currentQuestion = questions[currentQuestionIndex];
-    
+
     // Add user response
     setMessages(prev => [...prev, {
       id: `user-${Date.now()}`,
@@ -129,7 +139,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
     if (currentQuestionIndex < questions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
-      
+
       setIsTyping(true);
       setTimeout(() => {
         setMessages(prev => [...prev, {
@@ -157,7 +167,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
-    
+
     setMessages(prev => [...prev, {
       id: `user-${Date.now()}`,
       type: 'user',
@@ -205,8 +215,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
           >
             <div className={cn(
               'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-              message.type === 'user' 
-                ? 'bg-accent text-accent-foreground' 
+              message.type === 'user'
+                ? 'bg-accent text-accent-foreground'
                 : 'bg-primary/10 text-primary'
             )}>
               {message.type === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -223,7 +233,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
               )}>
                 <p className="text-sm leading-relaxed">{message.content}</p>
               </div>
-              
+
               {message.options && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {message.options.map((option) => (
@@ -240,7 +250,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
             </div>
           </div>
         ))}
-        
+
         {isTyping && (
           <div className="flex gap-3 animate-fade-in">
             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -255,7 +265,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyPart, onAssessment
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
