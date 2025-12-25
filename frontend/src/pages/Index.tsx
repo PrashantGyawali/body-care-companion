@@ -31,9 +31,11 @@ type AppStep =
 	| 'motion'
 
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
 const Index = () => {
 	const navigate = useNavigate()
+    const { user, logout, loading } = useAuth()
 	const [currentStep, setCurrentStep] = useState<AppStep>('landing')
 	const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([])
 	const [selectedBodyPart, setSelectedBodyPart] = useState<string | null>(null)
@@ -162,6 +164,10 @@ const Index = () => {
 							</div>
 						)}
 
+						<Button variant='ghost' onClick={() => navigate('/pricing')}>
+							Pricing
+						</Button>
+
 						<Button variant='ghost' onClick={() => navigate('/all-exercises')}>
 							Browse Exercises
 						</Button>
@@ -169,6 +175,20 @@ const Index = () => {
 						<Button variant='ghost' onClick={() => navigate('/dashboard')}>
 							Dashboard
 						</Button>
+
+                        {loading ? (
+                             <Button>
+                              Loading...
+                            </Button> // Placeholder to prevent layout shift
+                        ) : user ? (
+                            <Button onClick={logout}>
+                                Sign Out
+                            </Button>
+                        ) : (
+                            <Button onClick={() => navigate('/login')}>
+                                Sign In
+                            </Button>
+                        )}
 					</div>
 				</div>
 			</nav>

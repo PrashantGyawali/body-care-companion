@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { BadgeGallery } from '@/components/dashboard/BadgeGallery';
 import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
@@ -31,10 +32,12 @@ import {
     Share2,
     FileText,
     Download,
+    Lock,
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [stats, setStats] = useState<UserStats | null>(null);
     const [badges, setBadges] = useState<Badge[]>([]);
     const [weeklyData, setWeeklyData] = useState<{ day: string; sessions: number; reps: number }[]>([]);
@@ -72,9 +75,35 @@ const Dashboard: React.FC = () => {
     }
 
     const unlockedBadgesCount = badges.filter(b => b.unlockedAt).length;
+    const isPro = user?.subscriptionTier === 'pro' || user?.subscriptionTier === 'enterprise';
 
     return (
-        <div className="min-h-screen gradient-hero">
+        <div className="min-h-screen gradient-hero relative">
+             {!isPro && (
+                <div className="absolute inset-0 z-50 backdrop-blur-sm bg-background/50 flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-2xl p-8 text-center space-y-6 animate-scale-in">
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                            <Lock className="w-8 h-8 text-primary" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold mb-2">Detailed Progress Locked</h2>
+                            <p className="text-muted-foreground">
+                                Upgrade to Pro to view detailed analytics, charts, and track your complete history.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Button size="lg" className="w-full bg-primary hover:bg-primary/90" asChild>
+                                <Link to="/pricing">Upgrade to Pro</Link>
+                            </Button>
+                            <Button variant="ghost" asChild>
+                                <Link to="/">Return Home</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            <div className={!isPro ? "filter blur-md pointer-events-none select-none overflow-hidden h-screen" : ""}>
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -263,6 +292,7 @@ const Dashboard: React.FC = () => {
                 stats={stats}
                 badges={badges}
             />
+            </div>
         </div>
     );
 };
