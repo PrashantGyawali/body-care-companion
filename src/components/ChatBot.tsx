@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { getPersonalizedRecommendations } from '@/services/gemini';
+import { getAllAvailableExercises, getExercisesForBodyPart } from '@/data/exercises';
 
 interface Message {
   id: string;
@@ -13,7 +15,7 @@ interface Message {
 
 interface ChatBotProps {
   selectedBodyParts: string[] | null;
-  onAssessmentComplete: (assessment: AssessmentData) => void;
+  onAssessmentComplete: (assessment: AssessmentData, recommendedIds?: string[]) => void;
 }
 
 export interface AssessmentData {
@@ -64,6 +66,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyParts, onAssessmen
   const [assessment, setAssessment] = useState<Partial<AssessmentData>>({});
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -151,17 +154,50 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyParts, onAssessmen
         setIsTyping(false);
       }, 800);
     } else {
-      // Assessment complete
-      setIsTyping(true);
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          id: `bot-complete`,
-          type: 'bot',
-          content: "Thank you for providing this information! Based on your responses, I've prepared personalized exercise recommendations for you. Click below to view your treatment plan."
-        }]);
-        setIsTyping(false);
-        onAssessmentComplete(newAssessment as AssessmentData);
-      }, 1000);
+      // Assessment complete - Analyze with AI
+      setIsAnalyzing(true);
+
+      // Add analyzing message
+      setMessages(prev => [...prev, {
+        id: `bot-analyzing`,
+        type: 'bot',
+        content: "I'm analyzing your symptom profile and consulting our exercise database..."
+      }]);
+
+      // Filter exercises relevant to the selected body parts
+      const relevantExercises = (selectedBodyParts || []).flatMap(part => getExercisesForBodyPart(part));
+
+      // Remove duplicates
+      const uniqueExercises = Array.from(new Map(relevantExercises.map(ex => [ex.id, ex])).values());
+
+      // Call Gemini API (or fallback) with only relevant exercises
+      getPersonalizedRecommendations(newAssessment, uniqueExercises)
+        .then(recommendedIds => {
+          setIsAnalyzing(false);
+
+          setIsTyping(true);
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              id: `bot-complete`,
+              type: 'bot',
+              content: recommendedIds.length > 0
+                ? "I've personalized your plan! Based on your specific symptoms, I've selected the most effective exercises for you."
+                : "Thank you for providing this information! Based on your responses, I've prepared exercise recommendations for you."
+            }]);
+            setIsTyping(false);
+
+            // Pass recommendations back to parent
+            setTimeout(() => {
+              onAssessmentComplete(newAssessment as AssessmentData, recommendedIds);
+            }, 1000);
+          }, 800);
+        })
+        .catch(err => {
+          console.error("AI Analysis failed", err);
+          setIsAnalyzing(false);
+          // Fallback to normal flow
+          onAssessmentComplete(newAssessment as AssessmentData, []);
+        });
     }
   };
 
@@ -251,7 +287,19 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyParts, onAssessmen
           </div>
         ))}
 
-        {isTyping && (
+        {isAnalyzing && (
+          <div className="flex gap-3 animate-fade-in">
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+            </div>
+            <div className="px-4 py-3 bg-secondary rounded-2xl rounded-bl-md flex items-center gap-3">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">Generating personalized plan...</span>
+            </div>
+          </div>
+        )}
+
+        {isTyping && !isAnalyzing && (
           <div className="flex gap-3 animate-fade-in">
             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
               <Bot className="w-4 h-4" />

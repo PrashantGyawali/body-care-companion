@@ -23,6 +23,9 @@ interface ExerciseCardProps {
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, onStartExercise }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -89,9 +92,14 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, onStartExe
           </span>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {exercise.description}
-        </p>
+        <div className="mb-4">
+          <p className={cn(
+            "text-sm text-muted-foreground",
+            !isDescriptionExpanded && "line-clamp-1"
+          )}>
+            {exercise.description}
+          </p>
+        </div>
 
         {/* Expandable section */}
         <div className={cn(
@@ -137,7 +145,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ exercise, onStartExe
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => {
+              setIsExpanded(!isExpanded)
+              setIsDescriptionExpanded(!isDescriptionExpanded);
+            }}
             className={cn(
               'transition-transform duration-300',
               isExpanded && 'rotate-90'

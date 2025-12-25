@@ -5,7 +5,7 @@ import { ChatBot, AssessmentData } from '@/components/ChatBot';
 import { ExerciseCard, Exercise } from '@/components/ExerciseCard';
 import { ExercisePlayer } from '@/components/ExercisePlayer';
 import { MotionDetector } from '@/components/MotionDetector';
-import { getExercisesForBodyPart } from '@/data/exercises';
+import { getExercisesForBodyPart, getAllAvailableExercises } from '@/data/exercises';
 import { Activity, MessageCircle, Dumbbell, Calendar, ArrowRight, Sparkles, Heart, Shield, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,9 +31,25 @@ const Index = () => {
     setCurrentStep('chatbot');
   };
 
-  const handleAssessmentComplete = (data: AssessmentData) => {
+  const handleAssessmentComplete = (data: AssessmentData, recommendedIds?: string[]) => {
     setAssessment(data);
-    // Get exercises for ALL selected body parts and deduplicate by ID
+
+    // If AI provided specific recommendations, use them
+    if (recommendedIds && recommendedIds.length > 0) {
+      console.log("Using AI recommended exercises:", recommendedIds);
+      const allAvailable = getAllAvailableExercises();
+      const matchedExercises = allAvailable.filter(ex => recommendedIds.includes(ex.id));
+
+      // If we found matches, set them and return
+      if (matchedExercises.length > 0) {
+        setRecommendedExercises(matchedExercises);
+        setTimeout(() => setCurrentStep('exercises'), 1500);
+        return;
+      }
+    }
+
+    // Fallback: Get exercises for selected body parts (existing logic)
+    console.log("Using fallback category-based exercises");
     const allExercises: Exercise[] = [];
     const seenIds = new Set<string>();
 

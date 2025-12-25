@@ -44,6 +44,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Loosens tight neck muscles',
         'Improves posture awareness'
       ]
+    },
+    {
+      id: 'chin-tuck',
+      name: 'Chin Tucks',
+      description: 'Strengthens deep neck flexors and improves head posture.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Neck',
+      youtubeId: '7gXL6j7C1SA',
+      thumbnail: '/chin-tuck-thumbnail.png',
+      instructions: [
+        'Sit tall and look straight ahead.',
+        'Gently draw your chin straight back like making a "double chin".',
+        'Do not tilt your head up or down.',
+        'Hold for 5 seconds.',
+        'Relax and repeat 10 times.'
+      ],
+      benefits: [
+        'Corrects forward head posture',
+        'Relieves tension at base of skull',
+        'Strengthens deep neck muscles'
+      ]
+    },
+    {
+      id: 'isometric-side-bend',
+      name: 'Isometric Side Bending',
+      description: 'Strengthening neck muscles without joint movement.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Neck',
+      youtubeId: 'Vf3TPltK_UI',
+      thumbnail: '/isometric-neck-thumbnail.png',
+      instructions: [
+        'Place your hand on the side of your head.',
+        'Push your head into your hand, but resist movement.',
+        'Keep your head perfectly still.',
+        'Hold for 10 seconds.',
+        'Repeat 5 times on each side.'
+      ],
+      benefits: [
+        'Safe strengthening for painful necks',
+        'Improves stability',
+        'No joint aggravation'
+      ]
+    },
+    {
+      id: 'trapezius-stretch',
+      name: 'Upper Trapezius Stretch',
+      description: 'Relieves stress and tightness in the shoulders and neck.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Neck',
+      youtubeId: '0U0F4mF1c5M',
+      thumbnail: '/trap-stretch-thumbnail.png',
+      instructions: [
+        'Sit with one hand anchoring you to the chair seat.',
+        'Tilt your head away from that shoulder.',
+        'Gently use your other hand to increase the stretch.',
+        'Hold for 30 seconds.',
+        'Repeat twice on each side.'
+      ],
+      benefits: [
+        'Reduces stress tension',
+        'Relieves "tight shoulders"',
+        'Improves neck flexibility'
+      ]
+    },
+    {
+      id: 'neck-extension',
+      name: 'Active Neck Extension',
+      description: 'Counteracts "text neck" by extending the cervical spine.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Neck',
+      youtubeId: 'zM2I0IlbO9w',
+      thumbnail: '/neck-extension-thumbnail.png',
+      instructions: [
+        'Sit tall with shoulders relaxed.',
+        'Slowly look up towards the ceiling.',
+        'Go as far as comfortable without dizziness.',
+        'Hold for 2 seconds.',
+        'Return to neutral and repeat 10 times.'
+      ],
+      benefits: [
+        'Reverses "tech neck" posture',
+        'Improves extension range',
+        'Relieves hunching'
+      ]
     }
   ],
 
@@ -136,6 +224,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Improves side-reaching ability',
         'Enhances shoulder stability'
       ]
+    },
+    {
+      id: 'wall-slide',
+      name: 'Wall Slides',
+      description: 'Active range of motion exercise for overhead mobility.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'SWtMmj5g1nM',
+      thumbnail: '/wall-slides-thumbnail.png',
+      instructions: [
+        'Stand with back against a wall.',
+        'Place arms against wall in a "W" position.',
+        'Slide hands up as high as possible while keeping contact.',
+        'Slide back down to start.',
+        'Perform 10 repetitions.'
+      ],
+      benefits: [
+        'Improves overhead reach',
+        'Strengthens upper back',
+        'Corrects scapular mechanics'
+      ]
+    },
+    {
+      id: 'scapular-squeeze',
+      name: 'Scapular Squeezes',
+      description: 'Retraction exercise to improve posture and shoulder stability.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Shoulder',
+      youtubeId: 'L83Uji4Y_eE',
+      thumbnail: '/scap-squeeze-thumbnail.png',
+      instructions: [
+        'Sit or stand with arms at sides.',
+        'Squeeze your shoulder blades together.',
+        'Think about holding a pencil between them.',
+        'Hold for 5 seconds.',
+        'Relax and repeat 10 times.'
+      ],
+      benefits: [
+        'Fixes rounded shoulders',
+        'Reduces upper back pain',
+        'Improves posture'
+      ]
+    },
+    {
+      id: 'external-rotation',
+      name: 'External Rotation (Wall)',
+      description: 'Strengthens the rotator cuff muscles against a wall.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: '0_ZgLjv0a9o',
+      thumbnail: '/ext-rotation-thumbnail.png',
+      instructions: [
+        'Stand sideways to a wall.',
+        'Bend elbow to 90 degrees.',
+        'Press the back of your hand into the wall.',
+        'Hold for 5 seconds.',
+        'Relax and repeat 10 times.'
+      ],
+      benefits: [
+        'Strengthens rotator cuff',
+        'Improves shoulder stability',
+        'Essential for shoulder rehab'
+      ]
+    },
+    {
+      id: 'arm-circles',
+      name: 'Gentle Arm Circles',
+      description: 'Warm-up exercise to increase blood flow and mobility.',
+      duration: '2 min',
+      difficulty: 'Easy',
+      targetArea: 'Shoulder',
+      youtubeId: '1w37q1k75jU',
+      thumbnail: '/arm-circles-thumbnail.png',
+      instructions: [
+        'Stand with feet shoulder-width apart.',
+        'Extend arms out to sides.',
+        'Make small forward circles for 30 seconds.',
+        'Make small backward circles for 30 seconds.',
+        'Gradually increase circle size.'
+      ],
+      benefits: [
+        'Warms up shoulder joint',
+        'Improves synovial fluid circulation',
+        'Reduces stiffness'
+      ]
     }
   ],
   right_shoulder: [
@@ -226,6 +402,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Improves side-reaching ability',
         'Enhances shoulder stability'
       ]
+    },
+    {
+      id: 'wall-slide',
+      name: 'Wall Slides',
+      description: 'Active range of motion exercise for overhead mobility.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'SWtMmj5g1nM',
+      thumbnail: '/wall-slides-thumbnail.png',
+      instructions: [
+        'Stand with back against a wall.',
+        'Place arms against wall in a "W" position.',
+        'Slide hands up as high as possible while keeping contact.',
+        'Slide back down to start.',
+        'Perform 10 repetitions.'
+      ],
+      benefits: [
+        'Improves overhead reach',
+        'Strengthens upper back',
+        'Corrects scapular mechanics'
+      ]
+    },
+    {
+      id: 'scapular-squeeze',
+      name: 'Scapular Squeezes',
+      description: 'Retraction exercise to improve posture and shoulder stability.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Shoulder',
+      youtubeId: 'L83Uji4Y_eE',
+      thumbnail: '/scap-squeeze-thumbnail.png',
+      instructions: [
+        'Sit or stand with arms at sides.',
+        'Squeeze your shoulder blades together.',
+        'Think about holding a pencil between them.',
+        'Hold for 5 seconds.',
+        'Relax and repeat 10 times.'
+      ],
+      benefits: [
+        'Fixes rounded shoulders',
+        'Reduces upper back pain',
+        'Improves posture'
+      ]
+    },
+    {
+      id: 'external-rotation',
+      name: 'External Rotation (Wall)',
+      description: 'Strengthens the rotator cuff muscles against a wall.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: '0_ZgLjv0a9o',
+      thumbnail: '/ext-rotation-thumbnail.png',
+      instructions: [
+        'Stand sideways to a wall.',
+        'Bend elbow to 90 degrees.',
+        'Press the back of your hand into the wall.',
+        'Hold for 5 seconds.',
+        'Relax and repeat 10 times.'
+      ],
+      benefits: [
+        'Strengthens rotator cuff',
+        'Improves shoulder stability',
+        'Essential for shoulder rehab'
+      ]
+    },
+    {
+      id: 'arm-circles',
+      name: 'Gentle Arm Circles',
+      description: 'Warm-up exercise to increase blood flow and mobility.',
+      duration: '2 min',
+      difficulty: 'Easy',
+      targetArea: 'Shoulder',
+      youtubeId: '1w37q1k75jU',
+      thumbnail: '/arm-circles-thumbnail.png',
+      instructions: [
+        'Stand with feet shoulder-width apart.',
+        'Extend arms out to sides.',
+        'Make small forward circles for 30 seconds.',
+        'Make small backward circles for 30 seconds.',
+        'Gradually increase circle size.'
+      ],
+      benefits: [
+        'Warms up shoulder joint',
+        'Improves synovial fluid circulation',
+        'Reduces stiffness'
+      ]
     }
   ],
 
@@ -252,6 +516,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Supports knee stability',
         'Safe for most knee conditions'
       ]
+    },
+    {
+      id: 'straight-leg-raise',
+      name: 'Straight Leg Raises',
+      description: 'Strengthens quadriceps without putting pressure on the knee joint.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Knee',
+      youtubeId: 'L83Uji4Y_eE',
+      thumbnail: '/leg-raise-thumbnail.png',
+      instructions: [
+        'Lie on your back with one leg bent and the other straight.',
+        'Tighten the thigh muscles of the straight leg.',
+        'Lift your leg about 12 inches off the floor.',
+        'Hold for 5 seconds.',
+        'Slowly lower and repeat 10 times.'
+      ],
+      benefits: [
+        'Safe for acute knee pain',
+        'Builds quad strength',
+        'Zero joint impact'
+      ]
+    },
+    {
+      id: 'heel-slide',
+      name: 'Seated Heel Slides',
+      description: 'Improves knee flexion range of motion.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Knee',
+      youtubeId: '6_5k0LqHj9A',
+      thumbnail: '/heel-slide-thumbnail.png',
+      instructions: [
+        'Sit on a firm chair.',
+        'Extend your leg forward with heel on the floor.',
+        'Slide your heel back towards the chair as far as possible.',
+        'Hold for 5 seconds.',
+        'Slide back to start. Repeat 10 times.'
+      ],
+      benefits: [
+        'Increases bending range',
+        'Reduces stiffness',
+        'Good for post-surgery rehab'
+      ]
+    },
+    {
+      id: 'mini-squat',
+      name: 'Supported Mini Squats',
+      description: 'Functional strengthening for the entire leg.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Knee',
+      youtubeId: '7Xw3n8_F1pE',
+      thumbnail: '/mini-squat-thumbnail.png',
+      instructions: [
+        'Stand holding onto a chair back for support.',
+        'Feet shoulder-width apart.',
+        'Bend knees slightly (about 30-45 degrees).',
+        'Keep weight in heels and back straight.',
+        'Return to standing. Repeat 10 times.'
+      ],
+      benefits: [
+        'Functional leg strength',
+        'Improves ability to sit/stand',
+        'Safe loading of the knee'
+      ]
+    },
+    {
+      id: 'calf-raise',
+      name: 'Standing Calf Raises',
+      description: 'Strengthens the lower leg muscles to support the knee.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Knee',
+      youtubeId: 'gwLzBJYoWlI',
+      thumbnail: '/calf-raise-thumbnail.png',
+      instructions: [
+        'Stand holding a chair for balance.',
+        'Rise up onto your toes.',
+        'Hold briefly at the top.',
+        'Lower slowly back down.',
+        'Repeat 15 times.'
+      ],
+      benefits: [
+        'Improves ankle stability',
+        'Supports knee joint',
+        'Better balance'
+      ]
     }
   ],
   right_knee: [
@@ -275,6 +627,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Strengthens quadriceps',
         'Supports knee stability',
         'Safe for most knee conditions'
+      ]
+    },
+    {
+      id: 'straight-leg-raise',
+      name: 'Straight Leg Raises',
+      description: 'Strengthens quadriceps without putting pressure on the knee joint.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Knee',
+      youtubeId: 'L83Uji4Y_eE',
+      thumbnail: '/leg-raise-thumbnail.png',
+      instructions: [
+        'Lie on your back with one leg bent and the other straight.',
+        'Tighten the thigh muscles of the straight leg.',
+        'Lift your leg about 12 inches off the floor.',
+        'Hold for 5 seconds.',
+        'Slowly lower and repeat 10 times.'
+      ],
+      benefits: [
+        'Safe for acute knee pain',
+        'Builds quad strength',
+        'Zero joint impact'
+      ]
+    },
+    {
+      id: 'heel-slide',
+      name: 'Seated Heel Slides',
+      description: 'Improves knee flexion range of motion.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Knee',
+      youtubeId: '6_5k0LqHj9A',
+      thumbnail: '/heel-slide-thumbnail.png',
+      instructions: [
+        'Sit on a firm chair.',
+        'Extend your leg forward with heel on the floor.',
+        'Slide your heel back towards the chair as far as possible.',
+        'Hold for 5 seconds.',
+        'Slide back to start. Repeat 10 times.'
+      ],
+      benefits: [
+        'Increases bending range',
+        'Reduces stiffness',
+        'Good for post-surgery rehab'
+      ]
+    },
+    {
+      id: 'mini-squat',
+      name: 'Supported Mini Squats',
+      description: 'Functional strengthening for the entire leg.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Knee',
+      youtubeId: '7Xw3n8_F1pE',
+      thumbnail: '/mini-squat-thumbnail.png',
+      instructions: [
+        'Stand holding onto a chair back for support.',
+        'Feet shoulder-width apart.',
+        'Bend knees slightly (about 30-45 degrees).',
+        'Keep weight in heels and back straight.',
+        'Return to standing. Repeat 10 times.'
+      ],
+      benefits: [
+        'Functional leg strength',
+        'Improves ability to sit/stand',
+        'Safe loading of the knee'
+      ]
+    },
+    {
+      id: 'calf-raise',
+      name: 'Standing Calf Raises',
+      description: 'Strengthens the lower leg muscles to support the knee.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Knee',
+      youtubeId: 'gwLzBJYoWlI',
+      thumbnail: '/calf-raise-thumbnail.png',
+      instructions: [
+        'Stand holding a chair for balance.',
+        'Rise up onto your toes.',
+        'Hold briefly at the top.',
+        'Lower slowly back down.',
+        'Repeat 15 times.'
+      ],
+      benefits: [
+        'Improves ankle stability',
+        'Supports knee joint',
+        'Better balance'
       ]
     }
   ],
@@ -351,6 +791,94 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Increases spinal mobility',
         'Reduces mid-back stiffness',
         'Improves posture'
+      ]
+    },
+    {
+      id: 'seated-cat-cow',
+      name: 'Seated Cat-Cow',
+      description: 'Gentle spinal flexion and extension mobilization.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Spine',
+      youtubeId: 'w_W9G6F8a_k',
+      thumbnail: '/cat-cow-thumbnail.png',
+      instructions: [
+        'Sit on edge of chair with hands on knees.',
+        'Inhale, arch your back, and look up (Cow).',
+        'Exhale, round your spine, and look down (Cat).',
+        'Move slowly and rhythmically.',
+        'Repeat for 1 minute.'
+      ],
+      benefits: [
+        'Mobilizes entire spine',
+        'Relieves lower back stiffness',
+        'Safe for elderly'
+      ]
+    },
+    {
+      id: 'standing-extension',
+      name: 'Standing Back Extension',
+      description: 'Counteracts flexion from prolonged sitting.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Spine',
+      youtubeId: 'OpK4CjG1y_M',
+      thumbnail: '/back-ext-thumbnail.png',
+      instructions: [
+        'Stand with feet shoulder-width apart.',
+        'Place hands on your lower back for support.',
+        'Gently lean backward, looking up slightly.',
+        'Do not force the movement.',
+        'Hold for 3 seconds. Repeat 10 times.'
+      ],
+      benefits: [
+        'Relieves disc pressure',
+        'Improves lumbar range',
+        'Corrects posture'
+      ]
+    },
+    {
+      id: 'seated-side-bend',
+      name: 'Seated Side Bends',
+      description: 'Lateral spinal mobility exercise.',
+      duration: '3 min',
+      difficulty: 'Easy',
+      targetArea: 'Spine',
+      youtubeId: 'pS-uXhQmJ9c',
+      thumbnail: '/side-bend-thumbnail.png',
+      instructions: [
+        'Sit tall with feet flat.',
+        'Reach one arm overhead and lean to the opposite side.',
+        'Keep your hips grounded on the chair.',
+        'Hold for 5 seconds.',
+        'Return to center and switch sides. Repeat 10 times.'
+      ],
+      benefits: [
+        'Stretches lateral muscles (QL)',
+        'Improves rib cage mobility',
+        'Reduces stiffness'
+      ]
+    },
+    {
+      id: 'chair-march',
+      name: 'Seated Chair Marches',
+      description: 'Core stability and hip mobility exercise.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Spine',
+      youtubeId: 'T8jI4RnHHf0',
+      thumbnail: '/chair-march-thumbnail.png',
+      instructions: [
+        'Sit tall without leaning back.',
+        'Engage your abdominal muscles.',
+        'Lift one knee up as high as comfortable.',
+        'Lower firmly. Alternate legs.',
+        'Perform for 2 minutes.'
+      ],
+      benefits: [
+        'Strengthens deep core',
+        'Stabilizes lumbar spine',
+        'Safe cardio'
       ]
     }
   ],
