@@ -615,8 +615,20 @@ const UniversalExerciseCounter: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-4 w-full max-w-6xl" style={{ maxHeight: 'calc(100vh - 100px)' }}>
                 {/* Left Panel: Camera */}
                 <div className="flex-1 relative rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/50" style={{ maxHeight: '80vh', aspectRatio: '4/3' }}>
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline></video>
-                    <canvas ref={canvasRef} width="640" height="480" className="absolute inset-0 w-full h-full object-cover"></canvas>
+                    <video
+                        ref={videoRef}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        playsInline
+                        style={{ transform: 'scaleX(-1)' }}
+                    ></video>
+                    <canvas
+                        ref={canvasRef}
+                        width="640"
+                        height="480"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
+                    ></canvas>
 
                     {feedback && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-20">

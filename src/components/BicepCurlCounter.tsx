@@ -285,13 +285,14 @@ const BicepCurlCounter: React.FC = () => {
                     className="w-full h-full object-cover"
                     autoPlay
                     playsInline
-                    style={{ width: '640px', height: '480px' }}
+                    style={{ width: '640px', height: '480px', transform: 'scaleX(-1)' }}
                 ></video>
                 <canvas
                     ref={canvasRef}
                     width="640"
                     height="480"
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ transform: 'scaleX(-1)' }}
                 ></canvas>
 
                 {/* Feedback Overlay */}

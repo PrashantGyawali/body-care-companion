@@ -92,6 +92,50 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Improves shoulder flexibility',
         'Helps with rounded shoulder posture'
       ]
+    },
+    {
+      id: 'shoulder-flexion',
+      name: 'Active Shoulder Flexion',
+      description: 'Raises the arm forward to improve vertical range of motion.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'AsO4gB-7PKQ',
+      thumbnail: '/shoulder-flexion-thumbnail.png',
+      instructions: [
+        'Stand with good posture, arm at your side',
+        'Slowly raise your arm forward and up',
+        'Keep your elbow straight',
+        'Go as high as comfortable without shrugging',
+        'Lower slowly back to start'
+      ],
+      benefits: [
+        'Increases forward reach',
+        'Strengthens shoulder flexors',
+        'Improves overhead mobility'
+      ]
+    },
+    {
+      id: 'shoulder-abduction',
+      name: 'Active Shoulder Abduction',
+      description: 'Raises the arm to the side to strengthen the deltoid and improve mobility.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'qk1aE1j_4no',
+      thumbnail: '/shoulder-abduction-thumbnail.png',
+      instructions: [
+        'Stand tall with arm at your side',
+        'Raise your arm out to the side',
+        'Keep palm facing forward or down',
+        'Lift to shoulder height if possible',
+        'Lower slowly with control'
+      ],
+      benefits: [
+        'Strengthens medial deltoid',
+        'Improves side-reaching ability',
+        'Enhances shoulder stability'
+      ]
     }
   ],
   right_shoulder: [
@@ -115,6 +159,72 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Reduces shoulder stiffness',
         'Promotes blood flow to the joint',
         'Gentle enough for early rehabilitation'
+      ]
+    },
+    {
+      id: 'shoulder-stretch',
+      name: 'Cross-Body Shoulder Stretch',
+      description: 'Effective stretch for the posterior shoulder muscles.',
+      duration: '4 min',
+      difficulty: 'Easy',
+      targetArea: 'Shoulder',
+      youtubeId: 'Hf9XCH4RwIk',
+      thumbnail: '/shoulder-stretch-thumbnail.png',
+      instructions: [
+        'Stand or sit with good posture',
+        'Bring your right arm across your body',
+        'Use your left hand to gently pull the right arm closer',
+        'Do for at least 15 Reps',
+        'Repeat 3 times on each side'
+      ],
+      benefits: [
+        'Stretches posterior shoulder muscles',
+        'Improves shoulder flexibility',
+        'Helps with rounded shoulder posture'
+      ]
+    },
+    {
+      id: 'shoulder-flexion',
+      name: 'Active Shoulder Flexion',
+      description: 'Raises the arm forward to improve vertical range of motion.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'AsO4gB-7PKQ',
+      thumbnail: '/shoulder-flexion-thumbnail.png',
+      instructions: [
+        'Stand with good posture, arm at your side',
+        'Slowly raise your arm forward and up',
+        'Keep your elbow straight',
+        'Go as high as comfortable without shrugging',
+        'Lower slowly back to start'
+      ],
+      benefits: [
+        'Increases forward reach',
+        'Strengthens shoulder flexors',
+        'Improves overhead mobility'
+      ]
+    },
+    {
+      id: 'shoulder-abduction',
+      name: 'Active Shoulder Abduction',
+      description: 'Raises the arm to the side to strengthen the deltoid and improve mobility.',
+      duration: '4 min',
+      difficulty: 'Medium',
+      targetArea: 'Shoulder',
+      youtubeId: 'qk1aE1j_4no',
+      thumbnail: '/shoulder-abduction-thumbnail.png',
+      instructions: [
+        'Stand tall with arm at your side',
+        'Raise your arm out to the side',
+        'Keep palm facing forward or down',
+        'Lift to shoulder height if possible',
+        'Lower slowly with control'
+      ],
+      benefits: [
+        'Strengthens medial deltoid',
+        'Improves side-reaching ability',
+        'Enhances shoulder stability'
       ]
     }
   ],
@@ -165,6 +275,82 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Strengthens quadriceps',
         'Supports knee stability',
         'Safe for most knee conditions'
+      ]
+    }
+  ],
+
+  // Elbow exercises
+  left_elbow: [
+    {
+      id: 'elbow-flexion',
+      name: 'Active Elbow Flexion',
+      description: 'Controlled bending and straightening of the elbow to restore range of motion.',
+      duration: '4 min',
+      difficulty: 'Easy',
+      targetArea: 'Elbow',
+      youtubeId: '3l7s_z1Vd78',
+      thumbnail: '/elbow-flexion-thumbnail.png',
+      instructions: [
+        'Sit or stand with arm at your side',
+        'Slowly bend your elbow, bringing hand toward shoulder',
+        'Hold briefly at the top range',
+        'Slowly lower back to straight position',
+        'Keep movement smooth and controlled'
+      ],
+      benefits: [
+        'Improves elbow flexion and extension',
+        'Reduces joint stiffness',
+        'Maintains muscle tone'
+      ]
+    }
+  ],
+  right_elbow: [
+    {
+      id: 'elbow-flexion',
+      name: 'Active Elbow Flexion',
+      description: 'Controlled bending and straightening of the elbow to restore range of motion.',
+      duration: '4 min',
+      difficulty: 'Easy',
+      targetArea: 'Elbow',
+      youtubeId: '3l7s_z1Vd78',
+      thumbnail: '/elbow-flexion-thumbnail.png',
+      instructions: [
+        'Sit or stand with arm at your side',
+        'Slowly bend your elbow, bringing hand toward shoulder',
+        'Hold briefly at the top range',
+        'Slowly lower back to straight position',
+        'Keep movement smooth and controlled'
+      ],
+      benefits: [
+        'Improves elbow flexion and extension',
+        'Reduces joint stiffness',
+        'Maintains muscle tone'
+      ]
+    }
+  ],
+
+  // Spine exercises
+  spine: [
+    {
+      id: 'spine-twist',
+      name: 'Seated Thoracic Rotation',
+      description: 'Gentle spinal twist to improve upper back mobility.',
+      duration: '5 min',
+      difficulty: 'Easy',
+      targetArea: 'Spine',
+      youtubeId: 'fqb3gTjgC3E',
+      thumbnail: '/spine-twist-thumbnail.png',
+      instructions: [
+        'Sit tall in a chair with feet flat',
+        'Cross arms over chest or place hands behind head',
+        'Gently rotate your upper body to one side',
+        'Hold for a few seconds',
+        'Return to center and rotate to the other side'
+      ],
+      benefits: [
+        'Increases spinal mobility',
+        'Reduces mid-back stiffness',
+        'Improves posture'
       ]
     }
   ],

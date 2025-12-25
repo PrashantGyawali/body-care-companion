@@ -220,6 +220,103 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
         targetReps: 3
     },
 
+    // --- Active Elbow Flexion ---
+    'elbow-flexion': {
+        id: 'elbow-flexion',
+        type: 'REPS',
+        instruction: 'Bend your elbow fully, then straighten it completely.',
+        requiredLandmarks: [11, 13, 15], // Shoulder, Elbow, Wrist (Left default, swapped by component if right)
+        connections: [{ start: 11, end: 13 }, { start: 13, end: 15 }],
+        calculateMetric: (landmarks) => calculateAngle(landmarks[11], landmarks[13], landmarks[15]),
+        thresholds: {
+            start: 45,  // Flexed (hand to shoulder)
+            end: 150,   // Extended (arm straight)
+        },
+        targetReps: 10
+    },
+
+    // --- Seated Thoracic Rotation (Spine Twist) ---
+    'spine-twist': {
+        id: 'spine-twist',
+        type: 'REPS',
+        instruction: 'Twist your upper body to one side, then the other.',
+        requiredLandmarks: [11, 12, 23, 24], // Shoulders and Hips
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 23, end: 24 }, // Hip line
+            { start: 11, end: 23 }, // Torso Sides
+            { start: 12, end: 24 }
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate shoulder rotation relative to hips
+            // When facing forward, shoulder width / hip width is roughly constant (~1.4 usually)
+            // When twisting, the projected shoulder width decreases relative to hips (or vice versa depending on camera)
+
+            // Better metric: Nose position relative to Hip Center?
+            // Let's use Nose X relative to Shoulder Center X (similar to neck rotation but we want TORSO movement)
+            // Actually, for thoracic rotation, the shoulders rotate while hips stay still.
+            // So the Shoulders turn. We can reuse the "Nose relative to Shoulders" logic BUT
+            // if the whole torso turns, the nose AND shoulders move together relative to the hips.
+
+            // Let's calculate the X-offset of the Shoulder Center relative to the Hip Center.
+            const shoulderMidX = (landmarks[11].x + landmarks[12].x) / 2;
+            const hipMidX = (landmarks[23].x + landmarks[24].x) / 2;
+
+            // Normalize by Hip Width to be distance-invariant
+            const hipWidth = Math.abs(landmarks[23].x - landmarks[24].x);
+            if (hipWidth < 0.01) return 0;
+
+            const offset = (shoulderMidX - hipMidX) / hipWidth * 100;
+            return offset;
+        },
+        thresholds: {
+            start: 20,   // Twist Right (Shoulders moved right of hips)
+            end: -20,    // Twist Left (Shoulders moved left of hips)
+        },
+        targetReps: 10
+    },
+
+    // --- Shoulder Flexion ---
+    'shoulder-flexion': {
+        id: 'shoulder-flexion',
+        type: 'REPS',
+        instruction: 'Raise your arm straight forward and up.',
+        requiredLandmarks: [11, 13, 23], // Shoulder, Elbow, Hip
+        connections: [{ start: 23, end: 11 }, { start: 11, end: 13 }, { start: 13, end: 15 }], // Torso side and arm
+        calculateMetric: (landmarks) => {
+            // Calculate angle between torso (Hip-Shoulder) and Arm (Shoulder-Elbow)
+            // Use calculateAngle(Hip, Shoulder, Elbow)
+            // Start (arm down) approx 0-20 degrees
+            // End (arm up) approx 170-180 degrees
+            return calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
+        },
+        thresholds: {
+            start: 25,  // Arm down (near torso)
+            end: 140,   // Arm up (flexed forward)
+        },
+        targetReps: 10
+    },
+
+    // --- Shoulder Abduction ---
+    'shoulder-abduction': {
+        id: 'shoulder-abduction',
+        type: 'REPS',
+        instruction: 'Raise your arm out to the side.',
+        requiredLandmarks: [11, 13, 23], // Shoulder, Elbow, Hip
+        connections: [{ start: 23, end: 11 }, { start: 11, end: 13 }, { start: 13, end: 15 }],
+        calculateMetric: (landmarks) => {
+            // Similar to flexion but measuring abduction (arm moving away from midline in frontal plane)
+            // calcAngle(Hip, Shoulder, Elbow) works for this too as long as we assume 2D projection
+            // In 2D view from front, abduction angle increases as arm goes up.
+            return calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
+        },
+        thresholds: {
+            start: 25,  // Arm down (near torso)
+            end: 80,    // Arm up (almost parallel to ground, ~90 deg)
+        },
+        targetReps: 10
+    },
+
     // --- Manual catch-all for undefined exercises ---
     'default': {
         id: 'default',

@@ -184,13 +184,15 @@ export const MotionDetector: React.FC<MotionDetectorProps> = ({ exercise, onClos
                 playsInline
                 muted
                 className={cn(
-                  'w-full h-full object-cover scale-x-[-1]',
+                  'w-full h-full object-cover',
                   !isCameraActive && 'hidden'
                 )}
+                style={{ transform: 'scaleX(-1)' }}
               />
               <canvas
                 ref={canvasRef}
                 className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ transform: 'scaleX(-1)' }}
               />
 
               {!isCameraActive && (
