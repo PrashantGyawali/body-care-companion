@@ -4,6 +4,7 @@ export interface IUser extends Document {
   name: string
   email: string
   password: string
+  subscriptionTier: 'free' | 'pro' | 'enterprise'
   createdAt: Date
   updatedAt: Date
   _id: mongoose.Types.ObjectId
@@ -26,6 +27,11 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    subscriptionTier: {
+      type: String,
+      enum: ['free', 'pro', 'enterprise'],
+      default: 'free',
     },
   },
   {

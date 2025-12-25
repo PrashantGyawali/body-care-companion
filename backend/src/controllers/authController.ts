@@ -36,6 +36,7 @@ export const register = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        subscriptionTier: user.subscriptionTier,
       },
     })
   } catch (error) {
@@ -73,6 +74,7 @@ export const login = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        subscriptionTier: user.subscriptionTier,
       },
     })
   } catch (error) {
