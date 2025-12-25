@@ -24,9 +24,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/all-exercises" element={<AllExercises />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/bicep-curls" element={<BicepCurlCounter />} />
           <Route path="/exercise/:id" element={<UniversalExerciseCounter />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/bicep-curls" element={<BicepCurlCounter />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

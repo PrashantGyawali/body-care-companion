@@ -224,7 +224,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ selectedBodyParts, onAssessmen
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+    <div className="flex flex-col h-[500px] bg-card rounded-2xl shadow-card border border-border overflow-hidden relative">
       {/* Header */}
       <div className="gradient-primary px-6 py-4">
         <div className="flex items-center gap-3">
