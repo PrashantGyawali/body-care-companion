@@ -224,56 +224,6 @@ const Index = () => {
                 </div>
               </div>
             </section>
-
-            {/* Features Section */}
-            <section className="py-16 bg-secondary/50">
-              <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                  <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-                    How It Works
-                  </h2>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Get started in three simple steps
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-8">
-                  {[
-                    {
-                      icon: Dumbbell,
-                      title: 'Select Pain Area',
-                      description: 'Use our interactive body map to pinpoint where you\'re experiencing discomfort.'
-                    },
-                    {
-                      icon: MessageCircle,
-                      title: 'Answer Questions',
-                      description: 'Our AI chatbot asks about your pain severity, duration, and lifestyle.'
-                    },
-                    {
-                      icon: Activity,
-                      title: 'Get AI Feedback',
-                      description: 'Watch exercise demos and get real-time form correction using your camera.'
-                    }
-                  ].map((feature, index) => (
-                    <div
-                      key={index}
-                      className="gradient-card rounded-2xl p-6 shadow-card border border-border hover:shadow-glow transition-all duration-300 animate-slide-up"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow-glow mb-4">
-                        <feature.icon className="w-7 h-7 text-primary-foreground" />
-                      </div>
-                      <h3 className="font-display font-semibold text-lg text-foreground mb-2">
-                        {feature.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm">
-                        {feature.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
           </div>
         )}
 
