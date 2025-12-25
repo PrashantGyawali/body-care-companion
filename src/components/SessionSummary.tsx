@@ -215,7 +215,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                     <div className="flex gap-3">
                         <Button
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 border-2 border-muted-foreground/30 text-foreground hover:border-muted-foreground/50"
                             onClick={() => navigate('/')}
                         >
                             <Home className="w-4 h-4 mr-2" />
@@ -223,7 +223,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                         </Button>
                         <Button
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 border-2 border-muted-foreground/30 text-foreground hover:border-muted-foreground/50"
                             onClick={() => setShowShareModal(true)}
                         >
                             <Share2 className="w-4 h-4 mr-2" />

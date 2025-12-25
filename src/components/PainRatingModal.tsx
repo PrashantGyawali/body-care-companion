@@ -141,8 +141,8 @@ export const PainRatingModal: React.FC<PainRatingModalProps> = ({
                     {/* Actions */}
                     <div className="flex gap-3">
                         <Button
-                            variant="ghost"
-                            className="flex-1"
+                            variant="outline"
+                            className="flex-1 border-2 border-muted-foreground/30 text-foreground hover:border-muted-foreground/50"
                             onClick={handleSkip}
                         >
                             Skip

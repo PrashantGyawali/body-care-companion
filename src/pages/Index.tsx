@@ -141,8 +141,8 @@ const Index = () => {
                       Start Assessment
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
-                    <Button variant="glass" size="xl">
-                      Watch Demo
+                    <Button variant="glass" size="xl" onClick={() => navigate('/all-exercises')}>
+                      View Exercises
                     </Button>
                     <Button
                       variant="outline"
@@ -171,13 +171,25 @@ const Index = () => {
                 {/* Preview illustration */}
                 <div className="relative animate-fade-in" style={{ animationDelay: '0.3s' }}>
                   <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-20 animate-pulse-soft" />
-                  <div className="relative bg-card rounded-3xl shadow-card p-8 border border-border">
-                    <div className="aspect-square rounded-2xl bg-secondary flex items-center justify-center">
-                      <div className="text-center space-y-4 p-8">
-                        <div className="w-20 h-20 mx-auto rounded-full gradient-primary flex items-center justify-center shadow-glow animate-bounce-soft">
-                          <Activity className="w-10 h-10 text-primary-foreground" />
+                  <div className="relative bg-card rounded-3xl shadow-card p-8 border">
+                    <div className="rounded-2xl bg-secondary flex justify-center">
+                      <div className="flex flex-row text-center relative">
+                        {/* Positioning wrapper */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                          {/* Animated content */}
+                          <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center shadow-glow animate-bounce-soft">
+                            <Activity className="w-10 h-10 text-primary-foreground" />
+                          </div>
                         </div>
-                        <p className="text-muted-foreground">Click to select your pain area</p>
+
+                        <div className="flex-1">
+                          <img src="shoulder-pain.jpg" alt="shoulder-pain w-full" className='h-full' />
+
+                        </div>
+                        <div className="flex-1">
+                          <img src="elbow-touches.gif" alt="elbow-touches w-full" className='h-full' />
+
+                        </div>
                       </div>
                     </div>
                   </div>
