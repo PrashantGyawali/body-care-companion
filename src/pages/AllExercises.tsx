@@ -48,7 +48,7 @@ const AllExercises: React.FC = () => {
                         All <span className="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">Exercises</span>
                     </h1>
                     <p className="text-gray-400 max-w-2xl mx-auto">
-                        Browse our complete library of AI-tracked exercises. Each exercise includes real-time form feedback using your camera.
+                        Browse our complete library of AI-tracked exercises with real-time form feedback.
                     </p>
                 </div>
 

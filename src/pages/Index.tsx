@@ -28,6 +28,8 @@ const Index = () => {
     setSelectedBodyParts(partTitles);
     // Use the first selected part's title for exercise lookup
     setSelectedBodyPart(partTitles[0] || null);
+
+    // Always go to chatbot step - it will handle premium gating internally
     setCurrentStep('chatbot');
   };
 
@@ -80,45 +82,55 @@ const Index = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setCurrentStep('landing'); navigate('/'); }}>
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
               <Activity className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-xl text-foreground">PhysioAI</span>
           </div>
 
-          {currentStep !== 'landing' && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant={currentStep === 'select-body' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentStep('select-body')}
-              >
-                <Dumbbell className="w-4 h-4 mr-2" />
-                Select Area
-              </Button>
-              {selectedBodyPart && (
+          <div className="flex items-center gap-4">
+            {currentStep !== 'landing' && (
+              <div className="hidden md:flex items-center gap-2 mr-4">
                 <Button
-                  variant={currentStep === 'chatbot' ? 'default' : 'ghost'}
+                  variant={currentStep === 'select-body' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setCurrentStep('chatbot')}
+                  onClick={() => setCurrentStep('select-body')}
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Assessment
+                  <Dumbbell className="w-4 h-4 mr-2" />
+                  Select Area
                 </Button>
-              )}
-              {assessment && (
-                <Button
-                  variant={currentStep === 'exercises' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setCurrentStep('exercises')}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Exercises
-                </Button>
-              )}
-            </div>
-          )}
+                {selectedBodyPart && (
+                  <Button
+                    variant={currentStep === 'chatbot' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentStep('chatbot')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Assessment
+                  </Button>
+                )}
+                {assessment && (
+                  <Button
+                    variant={currentStep === 'exercises' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentStep('exercises')}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Exercises
+                  </Button>
+                )}
+              </div>
+            )}
+
+            <Button variant="ghost" onClick={() => navigate('/all-exercises')}>
+              Browse Exercises
+            </Button>
+
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              Dashboard
+            </Button>
+          </div>
         </div>
       </nav>
 

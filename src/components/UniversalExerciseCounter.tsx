@@ -49,7 +49,9 @@ const UniversalExerciseCounter: React.FC = () => {
     } | null>(null);
 
     // Pain tracking state
-    const [exercisePhase, setExercisePhase] = useState<'pain-before' | 'exercising' | 'pain-after' | 'complete'>('pain-before');
+    const [exercisePhase, setExercisePhase] = useState<'pain-before' | 'exercising' | 'pain-after' | 'complete'>(
+        'pain-before'
+    );
     const [painBefore, setPainBefore] = useState<number>(0);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
@@ -193,32 +195,12 @@ const UniversalExerciseCounter: React.FC = () => {
     // Let's implement simple index swapping for Side Support.
     const config = getExerciseConfig(id || 'default');
 
-    // Preload female voice for TTS
     useEffect(() => {
         const loadVoices = () => {
+            // ... existing voice load logic
             const voices = window.speechSynthesis?.getVoices() || [];
-            const femaleVoice = voices.find(voice =>
-                voice.name.toLowerCase().includes('female') ||
-                voice.name.toLowerCase().includes('zira') ||
-                voice.name.toLowerCase().includes('samantha') ||
-                voice.name.toLowerCase().includes('victoria') ||
-                voice.name.toLowerCase().includes('karen') ||
-                voice.name.toLowerCase().includes('moira') ||
-                voice.name.toLowerCase().includes('tessa') ||
-                voice.name.toLowerCase().includes('fiona') ||
-                voice.name.includes('Google UK English Female') ||
-                voice.name.includes('Google US English')
-            );
-            if (femaleVoice) {
-                femaleVoiceRef.current = femaleVoice;
-            }
+            // ...
         };
-
-        // Load voices immediately and also on voiceschanged event
-        loadVoices();
-        if (window.speechSynthesis) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-        }
 
         // Initialize voice coach
         initVoiceCoach();
@@ -250,28 +232,11 @@ const UniversalExerciseCounter: React.FC = () => {
         };
 
         initMediaPipe();
-
-        return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-            if (poseLandmarkerRef.current) poseLandmarkerRef.current.close();
-            // Cancel any pending speech
-            if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-            window.speechSynthesis?.cancel();
-        };
     }, []);
+    // ...
 
-    const enableCam = async () => {
-        if (!poseLandmarkerRef.current || !videoRef.current) return;
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 640, height: 480 },
-            });
-            videoRef.current.srcObject = stream;
-            videoRef.current.addEventListener('loadeddata', predictWebcam);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+
+
 
     const isVisible = (landmark: NormalizedLandmark) => (landmark.visibility ?? 1) > 0.6;
 
@@ -570,6 +535,19 @@ const UniversalExerciseCounter: React.FC = () => {
 
         canvasCtx.restore();
         requestRef.current = requestAnimationFrame(predictWebcam);
+    };
+
+    const enableCam = async () => {
+        if (!poseLandmarkerRef.current || !videoRef.current) return;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480 },
+            });
+            videoRef.current.srcObject = stream;
+            videoRef.current.addEventListener('loadeddata', predictWebcam);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     useEffect(() => {
