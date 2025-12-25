@@ -404,8 +404,9 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
     'spine-twist': {
         id: 'spine-twist',
         type: 'REPS',
+        sideSpecific: false,
         instruction: 'Twist your upper body to one side, then the other.',
-        requiredLandmarks: [11, 12, 23, 24], // Shoulders and Hips
+        requiredLandmarks: [0, 11, 12, 23, 24], // Nose, Shoulders and Hips
         connections: [
             { start: 11, end: 12 }, // Shoulder line
             { start: 23, end: 24 }, // Hip line
@@ -413,30 +414,28 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
             { start: 12, end: 24 }
         ],
         calculateMetric: (landmarks) => {
-            // Calculate shoulder rotation relative to hips
-            // When facing forward, shoulder width / hip width is roughly constant (~1.4 usually)
-            // When twisting, the projected shoulder width decreases relative to hips (or vice versa depending on camera)
+            // Track thoracic rotation by measuring nose offset relative to hip center
+            // When sitting still, nose is near the hip horizontal midpoint.
+            // When twisting, the nose moves significantly relative to the static hip baseline.
 
-            // Better metric: Nose position relative to Hip Center?
-            // Let's use Nose X relative to Shoulder Center X (similar to neck rotation but we want TORSO movement)
-            // Actually, for thoracic rotation, the shoulders rotate while hips stay still.
-            // So the Shoulders turn. We can reuse the "Nose relative to Shoulders" logic BUT
-            // if the whole torso turns, the nose AND shoulders move together relative to the hips.
+            const nose = landmarks[0];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
 
-            // Let's calculate the X-offset of the Shoulder Center relative to the Hip Center.
-            const shoulderMidX = (landmarks[11].x + landmarks[12].x) / 2;
-            const hipMidX = (landmarks[23].x + landmarks[24].x) / 2;
+            const hipMidX = (leftHip.x + rightHip.x) / 2;
+            const hipWidth = Math.abs(rightHip.x - leftHip.x);
 
-            // Normalize by Hip Width to be distance-invariant
-            const hipWidth = Math.abs(landmarks[23].x - landmarks[24].x);
             if (hipWidth < 0.01) return 0;
 
-            const offset = (shoulderMidX - hipMidX) / hipWidth * 100;
+            // Offset of nose relative to hips
+            // Positive: Twist Right (Nose moves toward/past Right Hip)
+            // Negative: Twist Left (Nose moves toward/past Left Hip)
+            const offset = (nose.x - hipMidX) / hipWidth * 100;
             return offset;
         },
         thresholds: {
-            start: 20,   // Twist Right (Shoulders moved right of hips)
-            end: -20,    // Twist Left (Shoulders moved left of hips)
+            start: 35,   // Twist Right (Nose moved significantly right of hips)
+            end: -35,    // Twist Left (Nose moved significantly left of hips)
         },
         targetReps: 10
     },
@@ -635,6 +634,408 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
         },
         targetReps: 10,
         sideSpecific: false
+    },
+
+    // --- Straight Leg Raises ---
+    'straight-leg-raise': {
+        id: 'straight-leg-raise',
+        type: 'REPS',
+        instruction: 'Lie on your back. Keep leg straight and lift about 12 inches.',
+        requiredLandmarks: [23, 25, 27], // Hip, Knee, Ankle
+        connections: [
+            { start: 23, end: 25 }, // Hip to Knee
+            { start: 25, end: 27 }  // Knee to Ankle
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate the angle at the hip (between torso and leg)
+            // We need to create a reference point above the hip for the "torso" direction
+            // Using shoulder (11) and hip (23) to define torso line
+            // Then measure angle between torso and leg (hip to ankle)
+
+            const hip = landmarks[23];
+            const knee = landmarks[25];
+            const ankle = landmarks[27];
+            const shoulder = landmarks[11];
+
+            // Calculate the vertical angle of the leg relative to horizontal
+            // When lying down, a raised leg will have the ankle higher (smaller Y) than hip
+            // We'll measure the angle at the hip joint
+
+            // Create a virtual point to the right of hip for horizontal reference
+            const horizontalRef = {
+                x: hip.x + 0.1,
+                y: hip.y,
+                z: hip.z,
+                visibility: 1
+            };
+
+            // Calculate angle: horizontal-ref -> hip -> ankle
+            // This gives us the leg elevation angle
+            const angle = calculateAngle(horizontalRef as NormalizedLandmark, hip, ankle);
+
+            return angle;
+        },
+        thresholds: {
+            start: 20,  // Leg raised (elevated from floor)
+            end: 5,     // Leg lowered (resting on floor)
+        },
+        targetReps: 10
+    },
+
+    // --- Seated Heel Slides ---
+    'heel-slide': {
+        id: 'heel-slide',
+        type: 'REPS',
+        instruction: 'Sit on a chair. Slide heel back towards chair, then forward.',
+        requiredLandmarks: [23, 25, 27], // Hip, Knee, Ankle
+        connections: [
+            { start: 23, end: 25 }, // Hip to Knee
+            { start: 25, end: 27 }  // Knee to Ankle
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate knee angle (Hip-Knee-Ankle)
+            // Extended leg (heel forward): ~170-180 degrees
+            // Flexed leg (heel back): ~90-120 degrees
+            return calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
+        },
+        thresholds: {
+            start: 120,  // Heel slid back (knee bent)
+            end: 160,    // Heel slid forward (knee extended)
+        },
+        targetReps: 10
+    },
+
+    // --- Supported Mini Squats ---
+    'mini-squat': {
+        id: 'mini-squat',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Stand with feet shoulder-width apart. Bend knees slightly (30-45 degrees).',
+        requiredLandmarks: [23, 24, 25, 26, 27, 28], // Both Hips, Knees, Ankles
+        connections: [
+            { start: 11, end: 23 }, { start: 12, end: 24 }, // Body
+            { start: 23, end: 25 }, { start: 24, end: 26 }, // Thighs
+            { start: 25, end: 27 }, { start: 26, end: 28 }  // Shins
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate average knee angle for both legs
+            const leftAngle = calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
+            const rightAngle = calculateAngle(landmarks[24], landmarks[26], landmarks[28]);
+            return (leftAngle + rightAngle) / 2;
+        },
+        thresholds: {
+            start: 155,  // Standing (nearly straight legs)
+            end: 130,    // Mini squat (30-45 degree bend, less deep than full squat)
+        },
+        targetReps: 10
+    },
+
+    // --- Standing Calf Raises ---
+    'calf-raise': {
+        id: 'calf-raise',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Stand holding a chair. Rise up onto your toes, then lower back down.',
+        requiredLandmarks: [23, 24, 25, 26, 27, 28, 29, 30], // Hips, Knees, Ankles, Heels
+        connections: [
+            { start: 23, end: 25 }, { start: 24, end: 26 }, // Thighs
+            { start: 25, end: 27 }, { start: 26, end: 28 }, // Shins
+            { start: 27, end: 31 }, { start: 28, end: 32 }  // Feet
+        ],
+        calculateMetric: (landmarks) => {
+            // Track heel elevation by measuring vertical distance between ankle and knee
+            // When on toes, ankle Y becomes smaller (moves up) relative to knee Y
+            // We'll normalize by the thigh length to be scale-invariant
+
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+
+            // Calculate thigh length for normalization (hip to knee distance)
+            const leftThighLength = Math.sqrt(
+                Math.pow(leftHip.x - leftKnee.x, 2) +
+                Math.pow(leftHip.y - leftKnee.y, 2)
+            );
+            const rightThighLength = Math.sqrt(
+                Math.pow(rightHip.x - rightKnee.x, 2) +
+                Math.pow(rightHip.y - rightKnee.y, 2)
+            );
+            const avgThighLength = (leftThighLength + rightThighLength) / 2;
+
+            if (avgThighLength < 0.01) return 0;
+
+            // Calculate vertical distance from knee to ankle (normalized)
+            // When standing flat: ankle is below knee (positive Y difference)
+            // When on toes: ankle moves up, reducing Y difference
+            const leftDist = (leftAnkle.y - leftKnee.y) / avgThighLength;
+            const rightDist = (rightAnkle.y - rightKnee.y) / avgThighLength;
+            const avgDist = (leftDist + rightDist) / 2;
+
+            // Return as percentage (multiply by 100 for easier threshold values)
+            return avgDist * 100;
+        },
+        thresholds: {
+            start: 40,   // Heels down (flat on floor)
+            end: 20,     // On toes (heels raised)
+        },
+        targetReps: 15
+    },
+
+    // --- Seated Cat-Cow ---
+    'seated-cat-cow': {
+        id: 'seated-cat-cow',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Sit on edge of chair. Arch back and look up (Cow), then round spine and look down (Cat).',
+        requiredLandmarks: [0, 11, 12, 23, 24], // Nose, Shoulders, Hips
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 23, end: 24 }, // Hip line
+            { start: 11, end: 23 }, // Left torso
+            { start: 12, end: 24 }  // Right torso
+        ],
+        calculateMetric: (landmarks) => {
+            // Track spinal flexion/extension by measuring:
+            // 1. Vertical distance between shoulders and hips (torso height)
+            // 2. Head position (nose) relative to shoulders
+
+            const nose = landmarks[0];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+
+            // Calculate midpoints
+            const shoulderMidY = (leftShoulder.y + rightShoulder.y) / 2;
+            const hipMidY = (leftHip.y + rightHip.y) / 2;
+
+            // Calculate torso length for normalization
+            const shoulderMidX = (leftShoulder.x + rightShoulder.x) / 2;
+            const hipMidX = (leftHip.x + rightHip.x) / 2;
+            const torsoLength = Math.sqrt(
+                Math.pow(shoulderMidX - hipMidX, 2) +
+                Math.pow(shoulderMidY - hipMidY, 2)
+            );
+
+            if (torsoLength < 0.01) return 0;
+
+            // Measure head position relative to shoulders (normalized)
+            // Cat: head down (nose Y > shoulder Y, positive value)
+            // Cow: head up (nose Y < shoulder Y, negative value)
+            const headPosition = (nose.y - shoulderMidY) / torsoLength;
+
+            // Return as percentage for easier thresholds
+            return headPosition * 100;
+        },
+        thresholds: {
+            start: -15,  // Cow position (head up, back arched)
+            end: 15,     // Cat position (head down, spine rounded)
+        },
+        targetReps: 10
+    },
+
+    // --- Standing Back Extension ---
+    'standing-extension': {
+        id: 'standing-extension',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Stand tall. Place hands on lower back. Gently lean backward, looking up slightly.',
+        requiredLandmarks: [0, 11, 12, 23, 24], // Nose, Shoulders, Hips
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 23, end: 24 }, // Hip line
+            { start: 11, end: 23 }, // Left torso
+            { start: 12, end: 24 }  // Right torso
+        ],
+        calculateMetric: (landmarks) => {
+            // Track backward lean by measuring torso angle from vertical
+            // Calculate the angle between vertical and the line from hips to shoulders
+
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const nose = landmarks[0];
+
+            // Calculate midpoints
+            const shoulderMidX = (leftShoulder.x + rightShoulder.x) / 2;
+            const shoulderMidY = (leftShoulder.y + rightShoulder.y) / 2;
+            const hipMidX = (leftHip.x + leftHip.x) / 2;
+            const hipMidY = (leftHip.y + rightHip.y) / 2;
+
+            // Calculate torso vector (from hip to shoulder)
+            const dx = shoulderMidX - hipMidX;
+            const dy = shoulderMidY - hipMidY;
+
+            // Calculate angle from vertical (negative Y axis)
+            // When standing straight: dx ≈ 0, angle ≈ 0
+            // When leaning back: dx becomes more negative (shoulders behind hips), angle increases
+            const angle = Math.atan2(Math.abs(dx), Math.abs(dy)) * 180 / Math.PI;
+
+            // Also consider head position for looking up
+            // When looking up, nose Y < shoulder Y
+            const headUp = shoulderMidY - nose.y;
+            const torsoLength = Math.sqrt(dx * dx + dy * dy);
+            const headFactor = torsoLength > 0.01 ? (headUp / torsoLength) * 20 : 0;
+
+            // Combine torso lean and head position
+            return angle + headFactor;
+        },
+        thresholds: {
+            start: 5,    // Standing upright (neutral)
+            end: 20,     // Leaning backward (extended)
+        },
+        targetReps: 10
+    },
+
+    // --- Seated Side Bends ---
+    'seated-side-bend': {
+        id: 'seated-side-bend',
+        type: 'REPS',
+        instruction: 'Sit tall. Reach one arm overhead and lean to the opposite side.',
+        requiredLandmarks: [11, 12, 23, 24], // Shoulders and Hips
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 23, end: 24 }, // Hip line
+            { start: 11, end: 23 }, // Left torso
+            { start: 12, end: 24 }, // Right torso
+            { start: 11, end: 13 }, { start: 13, end: 15 }, // Left arm
+            { start: 12, end: 14 }, { start: 14, end: 16 }  // Right arm
+        ],
+        calculateMetric: (landmarks) => {
+            // Track lateral flexion by measuring shoulder tilt
+            // When bending left: left shoulder drops (higher Y), right shoulder rises (lower Y)
+            // When bending right: right shoulder drops (higher Y), left shoulder rises (lower Y)
+
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+
+            // Calculate shoulder tilt angle
+            const shoulderDx = rightShoulder.x - leftShoulder.x;
+            const shoulderDy = rightShoulder.y - leftShoulder.y;
+
+            // Avoid division by zero
+            if (Math.abs(shoulderDx) < 0.001) return 0;
+
+            // Calculate tilt angle in degrees
+            // Positive: bending right (right shoulder lower)
+            // Negative: bending left (left shoulder lower)
+            const tiltAngle = Math.atan(shoulderDy / shoulderDx) * 180 / Math.PI;
+
+            return tiltAngle;
+        },
+        thresholds: {
+            start: 15,   // Bending to one side (right shoulder lower)
+            end: -15,    // Bending to opposite side (left shoulder lower)
+        },
+        targetReps: 10
+    },
+
+    // --- Seated Chair Marches ---
+    'chair-march': {
+        id: 'chair-march',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Sit tall without leaning back. Lift one knee up, then alternate legs.',
+        requiredLandmarks: [23, 24, 25, 26, 27, 28], // Hips, Knees, Ankles
+        connections: [
+            { start: 11, end: 23 }, { start: 12, end: 24 }, // Torso
+            { start: 23, end: 25 }, { start: 24, end: 26 }, // Thighs
+            { start: 25, end: 27 }, { start: 26, end: 28 }  // Shins
+        ],
+        calculateMetric: (landmarks) => {
+            // Track alternating knee lifts by measuring knee height relative to hips
+            // We'll track the difference in knee heights to detect alternating pattern
+
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
+
+            // Calculate hip midpoint Y
+            const hipMidY = (leftHip.y + rightHip.y) / 2;
+
+            // Calculate how high each knee is relative to hip (normalized)
+            // When knee is lifted: knee Y < hip Y (smaller value = higher on screen)
+            // Negative value = knee is above hip (lifted)
+            const leftKneeHeight = leftKnee.y - hipMidY;
+            const rightKneeHeight = rightKnee.y - hipMidY;
+
+            // Calculate the difference between left and right knee heights
+            // Positive: left knee higher (lifted)
+            // Negative: right knee higher (lifted)
+            const heightDifference = rightKneeHeight - leftKneeHeight;
+
+            // Normalize by hip width for scale invariance
+            const hipWidth = Math.abs(leftHip.x - rightHip.x);
+            if (hipWidth < 0.01) return 0;
+
+            const normalizedDiff = (heightDifference / hipWidth) * 100;
+
+            return normalizedDiff;
+        },
+        thresholds: {
+            start: 20,   // Left knee lifted (left knee higher than right)
+            end: -20,    // Right knee lifted (right knee higher than left)
+        },
+        targetReps: 20
+    },
+
+    // --- Chin Tucks ---
+    'chin-tuck': {
+        id: 'chin-tuck',
+        type: 'DURATION',
+        sideSpecific: false,
+        instruction: 'Sit tall looking straight ahead. Gently pull chin straight back (make a double chin). Hold for 5 seconds.',
+        requiredLandmarks: [0, 7, 8, 11, 12], // Nose, Ears, Shoulders
+        connections: [
+            { start: 7, end: 8 },    // Ear to ear (head)
+            { start: 11, end: 12 },  // Shoulders
+            { start: 0, end: 7 },    // Nose to left ear
+            { start: 0, end: 8 }     // Nose to right ear
+        ],
+        calculateMetric: (landmarks) => {
+            // Track horizontal chin retraction (forward/backward movement)
+            // The key is measuring how far back the nose moves relative to the ears
+
+            const nose = landmarks[0];
+            const leftEar = landmarks[7];
+            const rightEar = landmarks[8];
+
+            // Calculate ear midpoint
+            const earMidX = (leftEar.x + rightEar.x) / 2;
+            const earMidY = (leftEar.y + rightEar.y) / 2;
+
+            // Calculate head size for normalization (ear to ear distance)
+            const headWidth = Math.sqrt(
+                Math.pow(rightEar.x - leftEar.x, 2) +
+                Math.pow(rightEar.y - leftEar.y, 2)
+            );
+
+            if (headWidth < 0.01) return 100; // Invalid, return out of range
+
+            // Calculate the horizontal (X) distance from nose to ear midpoint
+            // This is the key metric for chin tucks - we want HORIZONTAL retraction
+            const horizontalDistance = Math.abs(nose.x - earMidX);
+
+            // Normalize by head width and convert to percentage
+            // When chin is tucked: nose moves back, horizontal distance decreases
+            // When chin is forward: horizontal distance increases
+            const normalizedDistance = (horizontalDistance / headWidth) * 100;
+
+            return normalizedDistance;
+        },
+        thresholds: {
+            min: 30,   // Chin tucked back (nose closer to ear line horizontally)
+            max: 50    // Maximum distance while still considered tucked
+        },
+        targetDuration: 5,
+        targetRepsForDuration: 10 // Hold for 5 seconds, repeat 10 times
     },
 
     // --- Manual catch-all for undefined exercises ---

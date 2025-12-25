@@ -685,6 +685,10 @@ const UniversalExerciseCounter: React.FC = () => {
                         style={{ transform: 'scaleX(-1)' }}
                     ></canvas>
 
+                    <p className='text-yellow-400 text-xs absolute bottom-2 left-2'>
+                        Disclaimer: AI can make mistakes
+                    </p>
+
                     {feedback && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-20">
                             <div className={`text-center p-6 bg-black/50 rounded-xl border ${feedback.includes('Great') ? 'border-emerald-500/50' : 'border-yellow-500/30'}`}>
