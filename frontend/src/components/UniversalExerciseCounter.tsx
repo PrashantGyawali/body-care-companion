@@ -365,10 +365,30 @@ const UniversalExerciseCounter: React.FC = () => {
                         // Check if in the middle of proper range
                         const { start, end } = config.thresholds;
                         if (start !== undefined && end !== undefined) {
-                            const range = Math.abs(end - start);
-                            const mid = (start + end) / 2;
-                            const deviation = Math.abs(val - mid) / range;
-                            positionScore = Math.max(10, 30 - deviation * 20);
+                            // Logic: If user exceeds the 'end' threshold (better ROM), give max score.
+                            // Only penalize if they are "short" or "wavering" in the middle?
+                            // Actually, we usually want to reward hitting the 'end' target.
+
+                            // Determine "Action Direction".
+                            // If start < end (0 -> 100), then val > end is GOOD.
+                            // If start > end (100 -> 0), then val < end is GOOD.
+                            const isIncreasing = end > start;
+                            const hasReachedTarget = isIncreasing ? val >= end : val <= end;
+
+                            if (hasReachedTarget) {
+                                positionScore = 30; // Perfect ROM
+                            } else {
+                                // Calculate how close they are to the target range
+                                // We valid range is [start, end].
+                                // If they are anywhere in [start, end], they are "working".
+                                // Penalize only if they are stuck in the middle? 
+                                // Actually, for "Live Form", if they are holding the peak, they get 30.
+                                // If they are resting (near start), they get 30 (good rest form).
+                                // Penalize being weirdly out of bounds?
+                                // Let's keep it simple: If valid number, give good score. 
+                                // Maybe penalize if metric is WAY off?
+                                positionScore = 30;
+                            }
                         }
                     } else {
                         // DURATION: check if within target range
@@ -435,6 +455,18 @@ const UniversalExerciseCounter: React.FC = () => {
 
                                     // Track form score at rep completion
                                     formScoreRef.current.push(formQuality);
+
+                                    // Check for Target Reps Completion
+                                    if (config.targetReps && statsRef.current.count >= config.targetReps) {
+                                        currentFeedback = "Goal reached! Great job!";
+                                        // Auto-end exercise
+                                        if (!autoSwitchScheduledRef.current) {
+                                            autoSwitchScheduledRef.current = true;
+                                            setTimeout(() => {
+                                                handleEndExercise();
+                                            }, 2000);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -468,15 +500,56 @@ const UniversalExerciseCounter: React.FC = () => {
                                     }
                                 }
 
+                                // Check if target duration reached for this hold
                                 if (config.targetDuration && statsRef.current.timer >= config.targetDuration) {
-                                    currentFeedback = "Great job! Switching sides...";
+                                    // If targetRepsForDuration is set, count this as one rep
+                                    if (config.targetRepsForDuration) {
+                                        // Increment hidden rep counter
+                                        statsRef.current.count += 1;
 
-                                    // Auto-switch side after 2 seconds
-                                    if (!autoSwitchScheduledRef.current) {
-                                        autoSwitchScheduledRef.current = true;
-                                        setTimeout(() => {
-                                            setActiveSide(prev => prev === 'left' ? 'right' : 'left');
-                                        }, 2000);
+                                        // Reset timer for next rep
+                                        statsRef.current.timer = 0;
+                                        stageRef.current = 'START';
+
+                                        // Check if we've reached target reps
+                                        if (statsRef.current.count >= config.targetRepsForDuration) {
+                                            currentFeedback = "Goal reached! Great job!";
+
+                                            // Auto-end exercise
+                                            if (!autoSwitchScheduledRef.current) {
+                                                autoSwitchScheduledRef.current = true;
+                                                setTimeout(() => {
+                                                    handleEndExercise();
+                                                }, 2000);
+                                            }
+                                        } else {
+                                            // Show brief feedback for completed hold, then continue
+                                            currentFeedback = `Hold ${statsRef.current.count} complete!`;
+                                            setTimeout(() => {
+                                                setFeedback(null);
+                                                feedbackRef.current = null;
+                                            }, 1500);
+                                        }
+                                    } else {
+                                        // Original behavior: single hold completion
+                                        currentFeedback = "Great job! Done!";
+
+                                        // Auto-switch side or End
+                                        // If not side specific, just END.
+                                        if (!autoSwitchScheduledRef.current) {
+                                            autoSwitchScheduledRef.current = true;
+
+                                            if (config.sideSpecific === false) {
+                                                setTimeout(() => {
+                                                    handleEndExercise();
+                                                }, 2000);
+                                            } else {
+                                                // Side switch logic
+                                                setTimeout(() => {
+                                                    setActiveSide(prev => prev === 'left' ? 'right' : 'left');
+                                                }, 2000);
+                                            }
+                                        }
                                     }
                                 }
                             } else {
@@ -565,20 +638,24 @@ const UniversalExerciseCounter: React.FC = () => {
                         {exerciseDetails?.name || 'Exercise'}
                     </h1>
                     <div className="flex gap-2">
-                        <Button
-                            size="sm"
-                            onClick={() => setActiveSide('left')}
-                            className={`${activeSide === 'left' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}
-                        >
-                            Left
-                        </Button>
-                        <Button
-                            size="sm"
-                            onClick={() => setActiveSide('right')}
-                            className={`${activeSide === 'right' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}
-                        >
-                            Right
-                        </Button>
+                        {config.sideSpecific !== false && (
+                            <>
+                                <Button
+                                    size="sm"
+                                    onClick={() => setActiveSide('left')}
+                                    className={`${activeSide === 'left' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}
+                                >
+                                    Left
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    onClick={() => setActiveSide('right')}
+                                    className={`${activeSide === 'right' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}
+                                >
+                                    Right
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
                 <Button

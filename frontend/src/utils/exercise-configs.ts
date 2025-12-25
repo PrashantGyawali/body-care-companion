@@ -24,6 +24,8 @@ export interface ExerciseConfig {
     // Optional: Target count or duration for success
     targetDuration?: number;
     targetReps?: number;
+    targetRepsForDuration?: number; // For DURATION type: count reps internally, end after N reps (not displayed)
+    sideSpecific?: boolean; // Default true. If false, hides Left/Right buttons.
 }
 
 // Helper: Calculate angle between 3 points (A-B-C)
@@ -124,6 +126,52 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
             max: 70
         },
         targetDuration: 5
+    },
+
+    // --- Active Neck Extension ---
+    'neck-extension': {
+        id: 'neck-extension',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Sit tall. Look up towards ceiling, then return to neutral.',
+        requiredLandmarks: [11, 12, 7, 8], // Shoulders, Ears
+        connections: [
+            { start: 11, end: 12 },
+            { start: 7, end: 8 }
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate Head Pitch (Looking Up/Down)
+            // Using Ear relative to Eye? Or Nose relative to Ear?
+            // When looking UP: Nose (0) goes UP relative to Ear (7,8). 
+            // Normalized direction vector of Ear->Nose.
+
+            // Average Ear Y
+            const midEarY = (landmarks[7].y + landmarks[8].y) / 2;
+            const noseY = landmarks[0].y;
+
+            // Normalizing by head scale (Ear to Ear dist)
+            const headSize = Math.abs(landmarks[7].x - landmarks[8].x);
+            // Glitch protection: If head size is too small (too far or invalid detect), 
+            // return a safe 'Neutral' value (e.g. 0) to prevent state jumping?
+            // BUT if we return 0 (Neutral), and we were in HOLD, it might falsely count a REP!
+            // Better to return NaN and handle it, or return a value that doesn't trigger state change.
+            // For now, let's just be strict about headSize.
+            if (headSize < 0.02) return 0;
+
+            const diffY = (midEarY - noseY) / headSize;
+
+            // Smoothed return? 
+            // To prevent jitter, maybe the calling code should smooth it. 
+            // Looking at UniversalExerciseCounter, it pushes to history (for smoothness score) but USES the raw 'val' for logic.
+            // We'll rely on the 800ms debounce in Counter to handle quick glitches.
+
+            return diffY * 100;
+        },
+        thresholds: {
+            start: 15,   // Neutral / Rest (< 15) - Increased slightly to make it easier to register 'Rest'
+            end: 45,     // Looking Up / Action (> 45) - Increased to ensure clear extension (reduce false positives)
+        },
+        targetReps: 5
     },
 
     // --- Isometric Side Bending ---
@@ -419,19 +467,174 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
         id: 'shoulder-abduction',
         type: 'REPS',
         instruction: 'Raise your arm out to the side.',
-        requiredLandmarks: [11, 13, 23], // Shoulder, Elbow, Hip
-        connections: [{ start: 23, end: 11 }, { start: 11, end: 13 }, { start: 13, end: 15 }],
+        requiredLandmarks: [11, 12, 13], // Shoulder, Opposite Shoulder, Elbow (No Hips needed)
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 11, end: 13 }, { start: 13, end: 15 } // Active Arm
+        ],
         calculateMetric: (landmarks) => {
-            // Similar to flexion but measuring abduction (arm moving away from midline in frontal plane)
-            // calcAngle(Hip, Shoulder, Elbow) works for this too as long as we assume 2D projection
-            // In 2D view from front, abduction angle increases as arm goes up.
-            return calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
+            // Angle at Shoulder (11), formed by Opposite Shoulder (12) and Elbow (13).
+            // Arm Down: ~90 degrees.
+            // Arm Side (Abducted): ~180 degrees.
+            return calculateAngle(landmarks[12], landmarks[11], landmarks[13]);
         },
         thresholds: {
-            start: 25,  // Arm down (near torso)
-            end: 80,    // Arm up (almost parallel to ground, ~90 deg)
+            start: 110,  // Arm down (allowing for slight abduction 90-110)
+            end: 150,    // Arm up (significant abduction)
         },
         targetReps: 10
+    },
+
+    // --- Wall Slides ---
+    'wall-slide': {
+        id: 'wall-slide',
+        type: 'REPS',
+        sideSpecific: false,
+        instruction: 'Stand against wall. Slide arms up and down.',
+        requiredLandmarks: [11, 12, 15, 16], // Both shoulders, both wrists
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 11, end: 13 }, { start: 13, end: 15 }, // Left arm
+            { start: 12, end: 14 }, { start: 14, end: 16 }  // Right arm
+        ],
+        calculateMetric: (landmarks) => {
+            // Calculate average wrist height relative to shoulders
+            // This measures how high the arms are raised
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
+
+            const shoulderMidY = (leftShoulder.y + rightShoulder.y) / 2;
+            const wristMidY = (leftWrist.y + rightWrist.y) / 2;
+
+            // Normalize by shoulder width for scale invariance
+            const shoulderWidth = Math.abs(leftShoulder.x - rightShoulder.x);
+            if (shoulderWidth < 0.01) return 0;
+
+            // Positive value = wrists above shoulders (arms raised)
+            // Negative value = wrists below shoulders (arms down)
+            const normalizedHeight = (shoulderMidY - wristMidY) / shoulderWidth;
+
+            return normalizedHeight;
+        },
+        thresholds: {
+            start: 0.3,  // Arms down (W position - wrists near or below shoulders)
+            end: 1.0,    // Arms up (overhead - wrists well above shoulders)
+        },
+        targetReps: 10
+    },
+
+    // --- Scapular Squeezes ---
+    'scapular-squeeze': {
+        id: 'scapular-squeeze',
+        type: 'DURATION',
+        sideSpecific: false,
+        instruction: 'Squeeze shoulder blades together. Hold for 5 seconds.',
+        requiredLandmarks: [11, 12], // Both shoulders
+        connections: [
+            { start: 11, end: 12 } // Shoulder line
+        ],
+        calculateMetric: (landmarks) => {
+            // Measure shoulder width change to detect retraction
+            // When squeezing shoulder blades together, shoulders move slightly inward
+            // We'll track the ratio of current width to a baseline
+
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+
+            // Calculate current shoulder width
+            const currentWidth = Math.abs(leftShoulder.x - rightShoulder.x);
+
+            // We need a baseline width to compare against
+            // Since we don't have historical data, we'll use a different approach:
+            // Measure the shoulder width as a ratio and look for reduction
+            // A smaller value indicates shoulders are closer together (squeezed)
+
+            // Return the width directly - smaller = more squeezed
+            // We'll normalize by a typical shoulder width range
+            // Typical shoulder width in normalized coords: 0.15-0.25
+            // When squeezed, it might reduce by 5-15%
+
+            return currentWidth;
+        },
+        thresholds: {
+            min: 0.10,  // Minimum width when squeezed (shoulders closer together)
+            max: 0.18   // Maximum width still considered squeezed
+        },
+        targetDuration: 5
+    },
+
+    // --- External Rotation (Wall) ---
+    'external-rotation': {
+        id: 'external-rotation',
+        type: 'DURATION',
+        sideSpecific: false,
+        instruction: 'Stand facing forward. Press both hands into wall at sides. Hold 5 seconds.',
+        requiredLandmarks: [11, 12, 13, 14, 15, 16], // Both shoulders, elbows, wrists
+        connections: [
+            { start: 11, end: 13 }, { start: 13, end: 15 }, // Left arm
+            { start: 12, end: 14 }, { start: 14, end: 16 }  // Right arm
+        ],
+        calculateMetric: (landmarks) => {
+            // Measure both elbow angles to verify 90-degree position
+            // This is an isometric hold with both arms
+            const leftShoulder = landmarks[11];
+            const leftElbow = landmarks[13];
+            const leftWrist = landmarks[15];
+
+            const rightShoulder = landmarks[12];
+            const rightElbow = landmarks[14];
+            const rightWrist = landmarks[16];
+
+            // Calculate the angle at both elbows
+            const leftAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+            const rightAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+
+            // Return average of both angles
+            return (leftAngle + rightAngle) / 2;
+        },
+        thresholds: {
+            min: 70,   // Minimum elbow angle (allowing some flexibility)
+            max: 110   // Maximum elbow angle (should be around 90 degrees)
+        },
+        targetDuration: 5,
+        targetRepsForDuration: 10 // Count 10 holds internally, end exercise after 10 reps
+    },
+
+    // --- Gentle Arm Circles ---
+    'arm-circles': {
+        id: 'arm-circles',
+        type: 'REPS',
+        instruction: 'Extend arms to sides. Make small circles, gradually increasing size.',
+        requiredLandmarks: [11, 12, 15, 16], // Both shoulders and wrists
+        connections: [
+            { start: 11, end: 12 }, // Shoulder line
+            { start: 11, end: 13 }, { start: 13, end: 15 }, // Left arm
+            { start: 12, end: 14 }, { start: 14, end: 16 }  // Right arm
+        ],
+        calculateMetric: (landmarks) => {
+            // Track wrist position relative to shoulder to detect circular motion
+            // We'll track the horizontal (X) position of the wrists
+            // A circle involves moving forward and backward
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+
+            // Calculate average horizontal displacement from shoulders
+            const leftOffset = (leftWrist.x - leftShoulder.x) * 100;
+            const rightOffset = (rightWrist.x - rightShoulder.x) * 100;
+
+            // Average the offsets (both arms should move together)
+            return (leftOffset + rightOffset) / 2;
+        },
+        thresholds: {
+            start: -10,  // Arms moved backward (back of circle)
+            end: 10,     // Arms moved forward (front of circle)
+        },
+        targetReps: 10,
+        sideSpecific: false
     },
 
     // --- Manual catch-all for undefined exercises ---

@@ -137,7 +137,7 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
         'Slowly look up towards the ceiling.',
         'Go as far as comfortable without dizziness.',
         'Hold for 2 seconds.',
-        'Return to neutral and repeat 10 times.'
+        'Return to neutral and repeat 5 times.'
       ],
       benefits: [
         'Reverses "tech neck" posture',
@@ -331,8 +331,8 @@ export const exerciseDatabase: Record<string, Exercise[]> = {
       instructions: [
         'Stand with feet shoulder-width apart.',
         'Extend arms out to sides.',
-        'Make small forward circles for 30 seconds.',
-        'Make small backward circles for 30 seconds.',
+        'Make small forward circles 10 times.',
+        'Make small backward circles 10 times.',
         'Gradually increase circle size.'
       ],
       benefits: [
