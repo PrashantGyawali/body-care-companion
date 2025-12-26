@@ -35,6 +35,7 @@ import {
     Lock,
 } from 'lucide-react';
 import axios from 'axios';
+import api from '@/lib/axios';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -70,7 +71,7 @@ const Dashboard: React.FC = () => {
     const getPro = async () => {
         setGettingPro(true);
         try {
-            await axios.get('/subscribe/pro');
+            await api.post('/auth/subscribe/pro')
         } catch (error) {
             console.error('Failed to get Pro subscription:', error);
         } finally {
