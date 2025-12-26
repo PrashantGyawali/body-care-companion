@@ -99,3 +99,32 @@ export const getMe = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal server error' })
   }
 }
+
+// Demo: Upgrade user to Pro tier without payment
+export const subscribePro = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore
+    const userId = req.userId
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    user.subscriptionTier = 'pro'
+    await user.save()
+
+    res.json({
+      message: 'Successfully upgraded to Pro!',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+      },
+    })
+  } catch (error) {
+    console.error('Subscribe Pro error:', error)
+    res.status(500).json({ message: 'Internal server error' })
+  }
+}
