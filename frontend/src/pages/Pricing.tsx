@@ -15,7 +15,7 @@ const tiers = [
   },
   {
     name: 'Pro',
-    price: '$29',
+    price: '$9.99',
     period: '/month',
     description: 'Advanced features for serious athletes',
     features: [
@@ -61,13 +61,12 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {tiers.map((tier) => (
-            <Card 
-              key={tier.name} 
-              className={`flex flex-col relative ${
-                tier.popular 
-                  ? 'border-primary shadow-lg scale-105 z-10' 
+            <Card
+              key={tier.name}
+              className={`flex flex-col relative ${tier.popular
+                  ? 'border-primary shadow-lg scale-105 z-10'
                   : 'border-border shadow-sm hover:shadow-md transition-shadow'
-              }`}
+                }`}
             >
               {tier.popular && (
                 <div className="absolute top-0 right-0 -mt-3 -mr-3 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full uppercase tracking-wide">
@@ -95,9 +94,9 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button 
-                  asChild 
-                  className={`w-full ${tier.popular ? 'bg-primary hover:bg-primary/90' : ''}`} 
+                <Button
+                  asChild
+                  className={`w-full ${tier.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
                   variant={tier.popular ? 'default' : 'outline'}
                 >
                   <Link to={tier.href}>{tier.buttonText}</Link>
@@ -106,8 +105,8 @@ const Pricing = () => {
             </Card>
           ))}
         </div>
-         <div className="mt-12 text-center">
-            <Link to="/" className="text-sm text-gray-500 hover:underline">Back to Home</Link>
+        <div className="mt-12 text-center">
+          <Link to="/" className="text-sm text-gray-500 hover:underline">Back to Home</Link>
         </div>
       </div>
     </div>

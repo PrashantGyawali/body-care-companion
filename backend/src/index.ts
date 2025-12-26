@@ -21,7 +21,7 @@ app.use('/api/ai', aiRoutes)
 app.use(express.static(path.join(__dirname, '../public')))
 
 // Handle React routing - serve index.html for all non-API routes
-app.get('*', (_req, res) => {
+app.get('/{*splat}', (_req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
